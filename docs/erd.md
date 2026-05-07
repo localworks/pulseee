@@ -1,3 +1,4 @@
+```mermaid
 erDiagram
 
     USERS {
@@ -65,3 +66,4 @@ erDiagram
     QUESTIONS ||--o{ TEXT_ANSWERS : answered_by
 
     SUBMISSIONS ||--o{ TEXT_ANSWERS : has_text
+```
