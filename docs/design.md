@@ -9,7 +9,8 @@
 - RESTfulに沿った設計
 - ロールによるアクセス制御はURLではなくサーバー側で行う
 - 従業員は常に「今週のサーベイ」に自動解決される `/survey` にアクセスする
-- 管理系URLは名前空間（`/hr/` `/manager/`）で分離する
+- ダッシュボードは `/dashboard` に統一し、権限ごとの差分はサーバー側で出し分ける
+- HR専用の管理機能は名前空間（`/hr/`）で分離する
 - ネストは2階層まで
 
 ---
@@ -18,46 +19,44 @@
 
 #### 認証
 
-| 画面             | URL                            | メソッド | 備考               |
-| ---------------- | ------------------------------ | -------- | ------------------ |
-| S1 ログイン      | `/employees/auth/google_oauth2`          | GET      | OmniAuth起動       |
-| S1 コールバック  | `/employees/auth/google_oauth2/callback` | GET      | 認証後リダイレクト |
-| S1E ログイン失敗 | `/auth/failure`                | GET      | ドメイン不一致など |
-| ログアウト       | `/employees/sign_out`          | DELETE   | Devise             |
+| 画面             | URL             | メソッド | 備考                 |
+| ---------------- | --------------- | -------- | -------------------- |
+| S1 ログイン      | `/login`        | GET      | ログイン導線         |
+| S1 Googleログイン | `/login/google` | POST     | OmniAuth起動         |
+| S1E ログイン失敗 | `/signin`       | GET      | ドメイン不一致など   |
+| ログアウト       | `/logout`       | DELETE   | セッション破棄       |
 
 #### 従業員向け
 
-| 画面            | URL                   | メソッド | 備考                          |
-| --------------- | --------------------- | -------- | ----------------------------- |
-| S2 回答フォーム | `/survey`             | GET      | 今週のサーベイに自動解決      |
-| S2 回答送信     | `/survey`             | POST     | 送信完了後 S3A へリダイレクト |
-| S3A 回答済み    | `/survey/thanks`      | GET      | 送信後リダイレクト先          |
-| S3B 期限切れ    | `/survey/expired`     | GET      | 期限切れアクセス時            |
-| S2E 未実施      | `/survey/unavailable` | GET      | 今週のサーベイ未作成時        |
-| S10 目安箱      | `/box`                | GET      | 従業員・人事担当者共通        |
+| 画面              | URL                   | メソッド | 備考                          |
+| ----------------- | --------------------- | -------- | ----------------------------- |
+| S2 回答フォーム   | `/survey`             | GET      | 今週のサーベイに自動解決。未実施・期限切れも同画面で表示 |
+| S2 回答送信       | `/survey`             | POST     | 送信完了後 S3A へリダイレクト |
+| S3A 回答済み      | `/survey/thanks`      | GET      | 送信後リダイレクト先          |
+| S10 目安箱        | `/survey/box`         | GET      | アンケート回答フロー内        |
+| S10 目安箱投稿    | `/survey/box`         | POST     |                               |
 
-#### マネージャー向け
+#### ダッシュボード
 
-| 画面               | URL                  | メソッド | 備考                 |
-| ------------------ | -------------------- | -------- | -------------------- |
-| S4M ダッシュボード | `/manager/dashboard` | GET      | ロール: manager のみ |
+| 画面              | URL          | メソッド | 備考                                      |
+| ----------------- | ------------ | -------- | ----------------------------------------- |
+| S4 ダッシュボード | `/dashboard` | GET      | ロール: manager / hr。メニューは権限で出し分け |
 
 #### 人事担当者向け
 
 | 画面                    | URL                                | メソッド | 備考                   |
 | ----------------------- | ---------------------------------- | -------- | ---------------------- |
-| S4HR ダッシュボード     | `/hr/dashboard`                    | GET      | ロール: hr のみ        |
-| S5 従業員一覧           | `/hr/employees`                    | GET      |                        |
-| S5 従業員追加フォーム   | `/hr/employees/new`                | GET      |                        |
-| S5 従業員作成           | `/hr/employees`                    | POST     |                        |
-| S5 従業員編集フォーム   | `/hr/employees/:id/edit`           | GET      |                        |
-| S5 従業員更新           | `/hr/employees/:id`                | PATCH    | ロール・有効無効の変更 |
+| S5 従業員一覧           | `/hr/users`                    | GET      |                        |
+| S5 従業員追加フォーム   | `/hr/users/new`                | GET      |                        |
+| S5 従業員作成           | `/hr/users`                    | POST     |                        |
+| S5 従業員編集フォーム   | `/hr/users/:id/edit`           | GET      |                        |
+| S5 従業員更新           | `/hr/users/:id`                | PATCH    | ロール・有効無効の変更 |
 | S6 サーベイ一覧         | `/hr/surveys`                      | GET      |                        |
 | S6 サーベイ作成フォーム | `/hr/surveys/new`                  | GET      |                        |
 | S6 サーベイ保存         | `/hr/surveys`                      | POST     |                        |
-| S6 サーベイ詳細         | `/hr/surveys/:id`                  | GET      |                        |
-| S7 リマインド画面       | `/hr/surveys/:survey_id/reminders` | GET      |                        |
-| S7 リマインド送信       | `/hr/surveys/:survey_id/reminders` | POST     | 全員または個別         |
+| S6 サーベイ詳細         | `/hr/surveys/:id`                  | GET      | 未回答者一覧・リマインド送信操作を表示 |
+| S6 リマインド送信       | `/hr/surveys/:id/remind`           | POST     | S6詳細内の操作、個別 |
+| S10 目安箱管理          | `/hr/box`                          | GET      | 全投稿閲覧・管理       |
 
 ---
 
@@ -68,38 +67,36 @@
 Rails.application.routes.draw do
 
   # 認証
-  devise_for :employees, controllers: {
-    omniauth_callbacks: 'employees/omniauth_callbacks'
+  devise_for :users, controllers: {
+    omniauth_callbacks: 'users/omniauth_callbacks'
   }
-  get '/auth/failure', to: 'sessions#failure'
+  devise_scope :user do
+    get    '/login',        to: 'sessions#new'
+    post   '/login/google', to: 'users/omniauth_callbacks#passthru'
+    get    '/signin',       to: 'sessions#failure'
+    delete '/logout',       to: 'devise/sessions#destroy'
+  end
 
   # ログイン後のルート振り分け
   root to: 'dashboards#redirect'
+  get '/dashboard', to: 'dashboards#show', as: :dashboard
 
   # 従業員向け
-  get  '/survey',             to: 'answers#new',         as: :new_answer
-  post '/survey',             to: 'answers#create',      as: :answers
-  get  '/survey/thanks',      to: 'answers#thanks',      as: :thanks
-  get  '/survey/expired',     to: 'answers#expired'
-  get  '/survey/unavailable', to: 'answers#unavailable'
+  resource :survey, only: [:show, :create], controller: 'answers' do
+    get :thanks
 
-  # 目安箱（従業員・人事担当者共通）
-  resource :box, only: [:show], controller: 'box'
-
-  # マネージャー
-  namespace :manager do
-    get 'dashboard', to: 'dashboards#show'
+    resource :box, only: [:show, :create], controller: 'box'
   end
 
   # 人事担当者
   namespace :hr do
-    get 'dashboard', to: 'dashboards#show'
-
-    resources :employees, except: [:show, :destroy]
+    resources :users, except: [:show, :destroy]
 
     resources :surveys, except: [:destroy] do
-      resources :reminders, only: [:index, :create]
+      post :remind, on: :member
     end
+
+    resource :box, only: [:show], controller: 'box'
   end
 
 end
@@ -113,16 +110,19 @@ end
 
 ```ruby
 # app/controllers/dashboards_controller.rb
-def redirect
-  role = current_employee&.role
+class DashboardsController < ApplicationController
+  before_action :authenticate_user!
 
-  case role
-  when 'hr'       then redirect_to hr_dashboard_path
-  when 'manager'  then redirect_to manager_dashboard_path
-  when 'employee' then redirect_to new_answer_path
-  else
-    Rails.logger.warn("Unexpected employee role: #{role.inspect}")
-    redirect_to root_path
+  def redirect
+    role = current_user.role
+
+    case role
+    when 'hr', 'manager' then redirect_to dashboard_path
+    when 'employee' then redirect_to survey_path
+    else
+      Rails.logger.warn("Unexpected user role: #{role.inspect}")
+      redirect_to login_path
+    end
   end
 end
 ```
@@ -131,30 +131,30 @@ end
 
 ### アクセス制御の方針
 
-URLでロールを分離しているが、サーバー側でも必ずロールチェックを行う。
+ダッシュボードは共通URLにし、表示内容やメニューを権限で出し分ける。HR専用の管理機能はサーバー側でも必ずロールチェックを行う。
 
 ```ruby
+# app/controllers/dashboards_controller.rb
+class DashboardsController < ApplicationController
+  before_action :authenticate_user!
+  before_action :require_manager_or_hr!, only: [:show]
+
+  private
+
+  def require_manager_or_hr!
+    redirect_to survey_path unless current_user.manager? || current_user.hr?
+  end
+end
+
 # app/controllers/hr/base_controller.rb
 class Hr::BaseController < ApplicationController
-  before_action :authenticate_employee!
+  before_action :authenticate_user!
   before_action :require_hr!
 
   private
 
   def require_hr!
-    redirect_to root_path unless current_employee.hr?
-  end
-end
-
-# app/controllers/manager/base_controller.rb
-class Manager::BaseController < ApplicationController
-  before_action :authenticate_employee!
-  before_action :require_manager_or_hr!
-
-  private
-
-  def require_manager_or_hr!
-    redirect_to root_path unless current_employee.manager? || current_employee.hr?
+    redirect_to dashboard_path unless current_user.hr?
   end
 end
 ```
@@ -168,44 +168,39 @@ flowchart TD
     classDef hr       fill:#FAECE7,stroke:#993C1D,color:#712B13
     classDef error    fill:#F5F5F3,stroke:#B4B2A9,color:#888780
 
-    S1["S1 ログイン画面\nGoogle Auth"]:::common
-    S1E["S1E ログイン失敗\n会社ドメイン以外はエラー"]:::error
+    S1["S1 ログイン\n/login\nGoogleログイン: /login/google"]:::common
+    S1E["S1E ログイン失敗\n/signin\n会社ドメイン以外はエラー"]:::error
     SX["セッション切れ\n全画面から発生"]:::error
 
     S1 -- ドメイン不一致 --> S1E
     S1E -. 再試行 .-> S1
-    SX -. S1へリダイレクト .-> S1
+    SX -. /loginへリダイレクト .-> S1
 
     S1 -- employee --> S2
-    S1 -- manager  --> S4M
-    S1 -- hr       --> S4HR
+    S1 -- manager / hr --> S4
 
-    S2["S2 回答フォーム\n質問7問・5段階＋自由記述"]:::employee
-    S2E["S2E 未実施サーベイ画面\n今週はまだ準備中"]:::error
-    S3A["S3A 回答済み画面"]:::employee
-    S3B["S3B 期限切れ画面"]:::error
-    S10_EMP["S10 目安箱\n投稿閲覧・いいね（従業員）"]:::employee
+    S2["S2 回答フォーム\n/survey\n質問7問・5段階＋自由記述"]:::employee
+    S2E["S2E 未実施状態\n/survey内で表示"]:::error
+    S3A["S3A 回答済み画面\n/survey/thanks"]:::employee
+    S3B["S3B 期限切れ状態\n/survey内で表示"]:::error
+    S10_EMP["S10 目安箱\n/survey/box\n投稿閲覧・いいね（従業員）"]:::employee
 
-    S2 -. サーベイ未作成 .-> S2E
-    S2E -. 作成 .-> S2
+    S2 -. サーベイ未作成時は同画面で表示 .-> S2E
+    S2E -. 作成後 .-> S2
     S2 -- 送信 --> S3A
-    S2 -. 期限切れ .-> S3B
+    S2 -. 期限切れ時は同画面で表示 .-> S3B
     S3A -- 目安箱を見る --> S10_EMP
 
-    S4M["S4M ダッシュボード（マネージャー）\nスコア・推移のみ閲覧可\n未回答者リスト非表示"]:::manager
+    S4["S4 ダッシュボード\n/dashboard\nサーベイ分析結果\nメニューは権限で出し分け"]:::common
+    S5["S5 従業員管理\n/hr/users\n人事担当者のみ"]:::hr
+    S6["S6 サーベイ管理\n/hr/surveys\n詳細に未回答者一覧・リマインド操作を含む\n人事担当者のみ"]:::hr
+    S10_HR["S10 目安箱管理\n/hr/box\n全投稿閲覧・管理"]:::hr
 
-    S4HR["S4HR ダッシュボード（人事担当者）\nスコア・推移・未回答者リスト・リマインド"]:::hr
-    S5["S5 従業員管理\n人事担当者のみ"]:::hr
-    S6["S6 サーベイ管理\n人事担当者のみ"]:::hr
-    S7["S7 リマインド送信\n人事担当者のみ実行可"]:::hr
-    S10_HR["S10 目安箱（人事担当者）\n全投稿閲覧・管理"]:::hr
-
-    S4HR -- リマインド --> S7
-    S4HR -- サイドバー --> S5
-    S4HR -- サイドバー --> S6
-    S4HR -- サイドバー --> S10_HR
-    S5 -. サイドバー .-> S4HR
-    S6 -. サイドバー .-> S4HR
-    S7 -. サイドバー .-> S4HR
-    S10_HR -. サイドバー .-> S4HR
+    S4 -- HRメニュー --> S5
+    S4 -- HRメニュー --> S6
+    S4 -- HRメニュー --> S10_HR
+    S6 -. リマインド送信\nPOST /hr/surveys/:id/remind .-> S6
+    S5 -. サイドバー .-> S4
+    S6 -. サイドバー .-> S4
+    S10_HR -. サイドバー .-> S4
 ```
