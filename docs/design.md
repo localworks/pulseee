@@ -19,12 +19,12 @@
 
 #### 認証
 
-| 画面             | URL             | メソッド | 備考                 |
-| ---------------- | --------------- | -------- | -------------------- |
-| S1 ログイン      | `/login`        | GET      | ログイン導線         |
-| S1 Googleログイン | `/login/google` | POST     | OmniAuth起動         |
-| S1E ログイン失敗 | `/signin`       | GET      | ドメイン不一致など   |
-| ログアウト       | `/logout`       | DELETE   | セッション破棄       |
+| 画面             | URL                         | メソッド | 備考                 |
+| ---------------- | --------------------------- | -------- | -------------------- |
+| S1 ログイン      | `/login`                    | GET      | ログイン導線         |
+| S1 Googleログイン | `/users/auth/google_oauth2` | POST     | OmniAuth起動         |
+| S1E ログイン失敗 | `/signin`                   | GET      | ドメイン不一致など   |
+| ログアウト       | `/logout`                   | DELETE   | セッション破棄       |
 
 #### 従業員向け
 
@@ -72,7 +72,6 @@ Rails.application.routes.draw do
   }
   devise_scope :user do
     get    '/login',        to: 'sessions#new'
-    post   '/login/google', to: 'users/omniauth_callbacks#passthru'
     get    '/signin',       to: 'sessions#failure'
     delete '/logout',       to: 'devise/sessions#destroy'
   end
@@ -168,7 +167,7 @@ flowchart TD
     classDef hr       fill:#FAECE7,stroke:#993C1D,color:#712B13
     classDef error    fill:#F5F5F3,stroke:#B4B2A9,color:#888780
 
-    S1["S1 ログイン\n/login\nGoogleログイン: /login/google"]:::common
+    S1["S1 ログイン\n/login\nGoogleログイン: /users/auth/google_oauth2"]:::common
     S1E["S1E ログイン失敗\n/signin\n会社ドメイン以外はエラー"]:::error
     SX["セッション切れ\n全画面から発生"]:::error
 
