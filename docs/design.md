@@ -22,7 +22,7 @@
 | 画面             | URL                         | メソッド | 備考                 |
 | ---------------- | --------------------------- | -------- | -------------------- |
 | S1 ログイン      | `/login`                    | GET      | ログイン導線         |
-| S1 Googleログイン | `/users/auth/google_oauth2` | POST     | OmniAuth起動         |
+| S1 Googleログイン | `/login/google`             | POST     | Googleアカウントでログイン |
 | S1E ログイン失敗 | `/login`                    | GET      | ドメイン不一致などをバリデーションメッセージで表示 |
 | ログアウト       | `/logout`                   | DELETE   | セッション破棄       |
 
@@ -72,6 +72,7 @@ Rails.application.routes.draw do
   }
   devise_scope :user do
     get    '/login',        to: 'sessions#new'
+    post   '/login/google', to: 'sessions#google'
     delete '/logout',       to: 'devise/sessions#destroy'
   end
 
@@ -166,7 +167,7 @@ flowchart TD
     classDef hr       fill:#FAECE7,stroke:#993C1D,color:#712B13
     classDef error    fill:#F5F5F3,stroke:#B4B2A9,color:#888780
 
-    S1["S1 ログイン\n/login\nGoogleログイン: /users/auth/google_oauth2"]:::common
+    S1["S1 ログイン\n/login\nGoogleログイン: /login/google"]:::common
     S1E["S1E ログイン失敗\n/login\n会社ドメイン以外はバリデーション表示"]:::error
     SX["セッション切れ\n全画面から発生"]:::error
 
