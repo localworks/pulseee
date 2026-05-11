@@ -20,10 +20,10 @@
 
 | 画面             | URL                            | メソッド | 備考               |
 | ---------------- | ------------------------------ | -------- | ------------------ |
-| S1 ログイン      | `/auth/google_auth2`           | GET      | OmniAuth起動       |
-| S1 コールバック  | `/auth/google_auth2/callback`  | GET      | 認証後リダイレクト |
+| S1 ログイン      | `/employees/auth/google_oauth2`          | GET      | OmniAuth起動       |
+| S1 コールバック  | `/employees/auth/google_oauth2/callback` | GET      | 認証後リダイレクト |
 | S1E ログイン失敗 | `/auth/failure`                | GET      | ドメイン不一致など |
-| ログアウト       | `/auth/sign_out`               | DELETE   | Devise             |
+| ログアウト       | `/employees/sign_out`          | DELETE   | Devise             |
 
 #### 従業員向け
 
@@ -114,10 +114,15 @@ end
 ```ruby
 # app/controllers/dashboards_controller.rb
 def redirect
-  case current_employee.role
+  role = current_employee&.role
+
+  case role
   when 'hr'       then redirect_to hr_dashboard_path
   when 'manager'  then redirect_to manager_dashboard_path
   when 'employee' then redirect_to new_answer_path
+  else
+    Rails.logger.warn("Unexpected employee role: #{role.inspect}")
+    redirect_to root_path
   end
 end
 ```
@@ -131,6 +136,7 @@ URLでロールを分離しているが、サーバー側でも必ずロール�
 ```ruby
 # app/controllers/hr/base_controller.rb
 class Hr::BaseController < ApplicationController
+  before_action :authenticate_employee!
   before_action :require_hr!
 
   private
@@ -142,6 +148,7 @@ end
 
 # app/controllers/manager/base_controller.rb
 class Manager::BaseController < ApplicationController
+  before_action :authenticate_employee!
   before_action :require_manager_or_hr!
 
   private
@@ -153,7 +160,6 @@ end
 ```
 
 ## 画面遷移図
-
 ```mermaid
 flowchart TD
     classDef common   fill:#F1EFE8,stroke:#5F5E5A,color:#444441
