@@ -51,6 +51,9 @@
         <p class="muted">Google認証の設定が未完了です。`GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定してください。</p>
       <% end %>
       <%= button_to "Googleでログイン", "/auth/google_oauth2", method: :post, data: { turbo: false }, class: "button button-primary" %>
+      <% if Rails.env.development? && !Rails.configuration.x.google_auth_configured %>
+        <%= button_to "開発用ログイン", development_login_path, method: :post, class: "button button-secondary" %>
+      <% end %>
     </section>
   <% end %>
 </main>

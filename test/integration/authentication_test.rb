@@ -37,6 +37,12 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "development login is unavailable outside development" do
+    post development_login_path
+
+    assert_response :not_found
+  end
+
   test "rails admin is restricted to system admins" do
     system_admin_role = Role.create!(name: "system_admin")
     admin = User.create!(name: "管理者", email: "admin@example.com")

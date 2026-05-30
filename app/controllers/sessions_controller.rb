@@ -3,6 +3,19 @@ class SessionsController < ApplicationController
     redirect_to root_path, alert: "Google認証の設定が未完了です"
   end
 
+  def development_login
+    return head :not_found unless Rails.env.development?
+
+    user = User.find_by(email: ENV.fetch("DEV_LOGIN_EMAIL", "kim@localworks.jp"))
+
+    if user
+      session[:user_id] = user.id
+      redirect_to root_path, notice: "開発用ログインしました"
+    else
+      redirect_to root_path, alert: "開発用ユーザーが見つかりません。bin/rails db:seed を実行してください"
+    end
+  end
+
   def create
     auth = request.env["omniauth.auth"]
     user = User.find_by(email: auth_email(auth))
