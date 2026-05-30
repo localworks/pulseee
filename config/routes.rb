@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   root "home#index"
 
+  post "/auth/google_oauth2", to: "sessions#missing_google_configuration"
   post "/auth/:provider/callback", to: "sessions#create"
   get "/auth/:provider/callback", to: "sessions#create"
   get "/auth/failure", to: "sessions#failure"

@@ -29,6 +29,10 @@ admin = User.find_or_initialize_by(email: "admin@example.com")
 admin.update!(name: "管理者サンプル", survey_subject: true)
 admin.roles = [ roles.fetch("system_admin"), roles.fetch("member") ]
 
+local_admin = User.find_or_initialize_by(email: "kim@localworks.jp")
+local_admin.update!(name: "Kim", survey_subject: true)
+local_admin.roles = [ roles.fetch("system_admin"), roles.fetch("member") ]
+
 member = User.find_or_initialize_by(email: "member@example.com")
 member.update!(name: "メンバーサンプル", survey_subject: true)
 member.roles = [ roles.fetch("member") ]

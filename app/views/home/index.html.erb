@@ -47,6 +47,9 @@
         <p class="eyebrow">Google Auth</p>
         <h2>登録済みアカウントでログイン</h2>
       </div>
+      <% unless Rails.configuration.x.google_auth_configured || Rails.env.test? %>
+        <p class="muted">Google認証の設定が未完了です。`GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定してください。</p>
+      <% end %>
       <%= button_to "Googleでログイン", "/auth/google_oauth2", method: :post, data: { turbo: false }, class: "button button-primary" %>
     </section>
   <% end %>

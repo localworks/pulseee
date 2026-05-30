@@ -1,4 +1,8 @@
 class SessionsController < ApplicationController
+  def missing_google_configuration
+    redirect_to root_path, alert: "Google認証の設定が未完了です"
+  end
+
   def create
     auth = request.env["omniauth.auth"]
     user = User.find_by(email: auth_email(auth))

@@ -31,6 +31,12 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert", text: "登録済みのGoogleアカウントでログインしてください"
   end
 
+  test "missing google configuration route stays inside app" do
+    post "/auth/google_oauth2", env: { "omniauth.test_mode" => false }
+
+    assert_response :redirect
+  end
+
   test "rails admin is restricted to system admins" do
     system_admin_role = Role.create!(name: "system_admin")
     admin = User.create!(name: "管理者", email: "admin@example.com")
