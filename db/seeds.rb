@@ -47,3 +47,12 @@ survey.update!(
   start_at: 1.day.ago,
   end_at: 1.week.from_now
 )
+
+unless local_admin.next_pending_survey_assignment
+  Survey.create!(
+    title: "MVP開発確認サーベイ #{Time.current.strftime("%Y%m%d%H%M%S")}",
+    status: "active",
+    start_at: 1.day.ago,
+    end_at: 1.week.from_now
+  )
+end

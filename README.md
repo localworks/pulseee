@@ -36,6 +36,8 @@ bin/rails db:seed
 bin/rails server
 ```
 
+サーベイが表示されない場合も、もう一度 `bin/rails db:seed` を実行してください。開発用ログインユーザーに未回答サーベイがない場合、確認用サーベイが作成されます。
+
 別の事前登録ユーザーでログインしたい場合は、`DEV_LOGIN_EMAIL` を指定してください。
 
 ```bash
