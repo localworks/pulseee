@@ -23,7 +23,9 @@
           <% (1..5).each do |score| %>
             <label class="score-option">
               <%= radio_button_tag "answers[#{question.id}]", score, @answers[question.id.to_s].to_i == score, required: true %>
-              <span><%= score %></span>
+              <span class="score-target">
+                <span class="score-dot"><%= score %></span>
+              </span>
             </label>
           <% end %>
         </div>

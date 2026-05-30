@@ -222,7 +222,7 @@ h3 {
 .score-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(44px, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .score-option input {
@@ -230,21 +230,64 @@ h3 {
   opacity: 0;
 }
 
-.score-option span {
+.score-target {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  border: 1px solid var(--hairline-strong);
+  min-height: 52px;
+  border: 1px solid transparent;
   border-radius: 8px;
-  color: var(--charcoal);
-  font-weight: 600;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
-.score-option input:checked + span {
+.score-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9999px;
+  background: #ffffff;
+  color: var(--charcoal);
+  font-weight: 600;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.score-option:hover .score-target {
+  background: #fafaf9;
+  border-color: var(--hairline);
+}
+
+.score-option:hover .score-dot {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.score-option input:focus-visible + .score-target {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.score-option input:checked + .score-target {
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--hairline));
+}
+
+.score-option input:checked + .score-target .score-dot {
   background: var(--primary);
   border-color: var(--primary);
   color: #ffffff;
+  transform: none;
 }
 
 .score-labels {
