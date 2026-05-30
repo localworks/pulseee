@@ -1,0 +1,1 @@
+// RailsAdmin importmap entrypoint.

@@ -1,0 +1,42 @@
+<main class="app-shell">
+  <section class="top-bar">
+    <div>
+      <p class="eyebrow">Survey</p>
+      <h1><%= @assignment.survey.title %></h1>
+    </div>
+    <%= link_to "戻る", root_path, class: "button button-secondary" %>
+  </section>
+
+  <% flash.each do |type, message| %>
+    <div class="flash <%= type %>"><%= message %></div>
+  <% end %>
+
+  <%= form_with url: survey_assignment_response_path(@assignment), method: :post, class: "response-form" do %>
+    <% @assignment.survey.survey_questions.ordered.each do |question| %>
+      <fieldset class="question-block">
+        <legend>
+          <span>Q<%= question.order_index %></span>
+          <%= question.body %>
+        </legend>
+
+        <div class="score-row">
+          <% (1..5).each do |score| %>
+            <label class="score-option">
+              <%= radio_button_tag "answers[#{question.id}]", score, @answers[question.id.to_s].to_i == score, required: true %>
+              <span><%= score %></span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="score-labels">
+          <span>まったくそう思わない</span>
+          <span>とてもそう思う</span>
+        </div>
+      </fieldset>
+    <% end %>
+
+    <div class="form-actions">
+      <%= submit_tag "送信する", class: "button button-primary" %>
+    </div>
+  <% end %>
+</main>

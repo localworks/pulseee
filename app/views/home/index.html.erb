@@ -1,0 +1,53 @@
+<main class="app-shell">
+  <section class="top-bar">
+    <div>
+      <p class="eyebrow">Pulseee</p>
+      <h1>パルスサーベイ</h1>
+    </div>
+
+    <% if current_user %>
+      <div class="top-actions">
+        <% if current_user.system_admin? %>
+          <%= link_to "管理画面", rails_admin_path, class: "button button-secondary" %>
+        <% end %>
+        <%= button_to "ログアウト", logout_path, method: :delete, class: "button button-ghost" %>
+      </div>
+    <% end %>
+  </section>
+
+  <% flash.each do |type, message| %>
+    <div class="flash <%= type %>"><%= message %></div>
+  <% end %>
+
+  <% if current_user %>
+    <section class="work-panel">
+      <div>
+        <p class="eyebrow">Today</p>
+        <h2><%= current_user.name %>さん</h2>
+      </div>
+
+      <% if @assignment %>
+        <div class="survey-summary">
+          <div>
+            <p class="muted">回答期限</p>
+            <p class="deadline"><%= l @assignment.survey.end_at, format: :long %></p>
+          </div>
+          <h3><%= @assignment.survey.title %></h3>
+          <%= link_to "回答する", new_survey_assignment_response_path(@assignment), class: "button button-primary" %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>回答が必要なサーベイはありません</h3>
+        </div>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="login-panel">
+      <div>
+        <p class="eyebrow">Google Auth</p>
+        <h2>登録済みアカウントでログイン</h2>
+      </div>
+      <%= button_to "Googleでログイン", "/auth/google_oauth2", method: :post, data: { turbo: false }, class: "button button-primary" %>
+    </section>
+  <% end %>
+</main>
