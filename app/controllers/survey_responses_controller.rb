@@ -28,6 +28,12 @@ class SurveyResponsesController < ApplicationController
   end
 
   def answer_params
-    params.fetch(:answers, {}).permit!
+    answers = params.fetch(:answers, ActionController::Parameters.new)
+    answers = ActionController::Parameters.new(answers) unless answers.respond_to?(:permit)
+
+    question_ids = @assignment.survey.survey_questions.pluck(:id).map(&:to_s)
+    permitted_question_ids = question_ids.select { |id| id.match?(/\A\d+\z/) }
+
+    answers.permit(*permitted_question_ids)
   end
 end

@@ -90,6 +90,36 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select "input[checked]", count: 6
   end
 
+  test "missing answers are rejected without server error" do
+    user = User.create!(name: "対象者", email: "missing@example.com", survey_subject: true)
+    survey = Survey.create!(title: "未送信チェック", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    assignment = survey.survey_assignments.find_by!(user: user)
+
+    login_as(user)
+
+    assert_no_difference -> { ScoreAnswer.count } do
+      post survey_assignment_response_path(assignment)
+    end
+
+    assert_response :unprocessable_content
+    assert_select ".flash.alert", text: "すべての設問に回答してください"
+  end
+
+  test "unexpected answer keys are ignored" do
+    user = User.create!(name: "対象者", email: "extra@example.com", survey_subject: true)
+    survey = Survey.create!(title: "余計なキー", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    assignment = survey.survey_assignments.find_by!(user: user)
+    answers = answers_for(survey, 4).merge("not_a_question" => "5", "999999" => "5")
+
+    login_as(user)
+
+    assert_difference -> { ScoreAnswer.count }, 7 do
+      post survey_assignment_response_path(assignment), params: { answers: answers }
+    end
+
+    assert_redirected_to root_path
+  end
+
   private
 
   def login_as(user)
