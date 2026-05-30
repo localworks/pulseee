@@ -25,6 +25,8 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     mock_google_auth("unknown@example.com")
 
     post "/auth/google_oauth2"
+    follow_redirect!
+    assert_redirected_to login_path
     follow_all_redirects
 
     assert_response :success
@@ -41,6 +43,18 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     post development_login_path
 
     assert_response :not_found
+  end
+
+  test "logout redirects to login screen" do
+    user = User.create!(name: "登録済み", email: "logout@example.com")
+
+    login_as(user)
+    delete logout_path
+
+    assert_redirected_to login_path
+    follow_redirect!
+    assert_select ".flash.notice", text: "ログアウトしました"
+    assert_select "h2", text: "登録済みアカウントでログイン"
   end
 
   test "rails admin is restricted to system admins" do

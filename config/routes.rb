@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   mount RailsAdmin::Engine => "/admin", as: "rails_admin"
 
   root "home#index"
+  get "/login", to: "home#index", as: :login
 
   post "/auth/google_oauth2", to: "sessions#missing_google_configuration"
   post "/auth/development", to: "sessions#development_login", as: :development_login

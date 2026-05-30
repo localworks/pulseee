@@ -1,6 +1,6 @@
 class SessionsController < ApplicationController
   def missing_google_configuration
-    redirect_to root_path, alert: "Google認証の設定が未完了です"
+    redirect_to login_path, alert: "Google認証の設定が未完了です"
   end
 
   def development_login
@@ -13,7 +13,7 @@ class SessionsController < ApplicationController
       session[:user_id] = user.id
       redirect_to root_path, notice: "開発用ログインしました"
     else
-      redirect_to root_path, alert: "開発用ユーザーが見つかりません。bin/rails db:seed を実行してください"
+      redirect_to login_path, alert: "開発用ユーザーが見つかりません。bin/rails db:seed を実行してください"
     end
   end
 
@@ -27,17 +27,17 @@ class SessionsController < ApplicationController
       redirect_to root_path, notice: "ログインしました"
     else
       reset_session
-      redirect_to root_path, alert: "登録済みのGoogleアカウントでログインしてください"
+      redirect_to login_path, alert: "登録済みのGoogleアカウントでログインしてください"
     end
   end
 
   def failure
-    redirect_to root_path, alert: "Google認証に失敗しました"
+    redirect_to login_path, alert: "Google認証に失敗しました"
   end
 
   def destroy
     reset_session
-    redirect_to root_path, notice: "ログアウトしました"
+    redirect_to login_path, notice: "ログアウトしました"
   end
 
   private
