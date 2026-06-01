@@ -33,6 +33,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     get new_survey_assignment_response_path(assignment)
     assert_response :success
     assert_select "input.score-range[type=range][min='1'][max='10']", count: 7
+    assert_select ".score-scale span", count: 70
     assert_select ".score-value strong", text: "未選択", count: 7
 
     assert_difference -> { ScoreAnswer.count }, 7 do

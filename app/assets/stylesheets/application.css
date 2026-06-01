@@ -266,6 +266,28 @@ h3 {
   outline-offset: 4px;
 }
 
+.score-scale {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  margin-top: -8px;
+  color: var(--steel);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.score-scale span {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.score-scale span::before {
+  width: 1px;
+  height: 8px;
+  background: var(--hairline-strong);
+  content: "";
+}
+
 .score-labels {
   display: flex;
   justify-content: space-between;

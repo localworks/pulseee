@@ -41,6 +41,12 @@
                           action: "input->score-slider#select change->score-slider#select"
                         },
                         aria: { label: "Q#{question.order_index}の評価" } %>
+
+          <div class="score-scale" aria-hidden="true">
+            <% (ScoreAnswer::MIN_SCORE..ScoreAnswer::MAX_SCORE).each do |score| %>
+              <span><%= score %></span>
+            <% end %>
+          </div>
         </div>
 
         <div class="score-labels">
