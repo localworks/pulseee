@@ -7,11 +7,11 @@ class ScoreAnswerTest < ActiveSupport::TestCase
     @survey_question = survey.survey_questions.find_by!(question: question)
   end
 
-  test "score must be between one and five" do
+  test "score must be between one and ten" do
     assert ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 1).valid?
-    assert ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 5).valid?
+    assert ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 10).valid?
     assert_not ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 0).valid?
-    assert_not ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 6).valid?
+    assert_not ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 11).valid?
   end
 
   test "submit token and survey question pair must be unique" do

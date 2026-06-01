@@ -19,15 +19,28 @@
           <%= question.body %>
         </legend>
 
-        <div class="score-row">
-          <% (1..5).each do |score| %>
-            <label class="score-option">
-              <%= radio_button_tag "answers[#{question.id}]", score, @answers[question.id.to_s].to_i == score, required: true %>
-              <span class="score-target">
-                <span class="score-dot"><%= score %></span>
-              </span>
-            </label>
-          <% end %>
+        <% selected_score = Integer(@answers[question.id.to_s], exception: false) %>
+        <% selected_score = nil unless selected_score&.between?(ScoreAnswer::MIN_SCORE, ScoreAnswer::MAX_SCORE) %>
+
+        <div class="score-slider" data-controller="score-slider">
+          <div class="score-value" aria-live="polite">
+            <span>現在の評価</span>
+            <strong data-score-slider-target="value"><%= selected_score || "未選択" %></strong>
+          </div>
+
+          <%= hidden_field_tag "answers[#{question.id}]", selected_score, data: { score_slider_target: "input" } %>
+          <%= tag.input type: "range",
+                        id: "score_range_#{question.id}",
+                        class: "score-range",
+                        min: ScoreAnswer::MIN_SCORE,
+                        max: ScoreAnswer::MAX_SCORE,
+                        step: 1,
+                        value: selected_score || 5,
+                        data: {
+                          score_slider_target: "range",
+                          action: "input->score-slider#select change->score-slider#select"
+                        },
+                        aria: { label: "Q#{question.order_index}の評価" } %>
         </div>
 
         <div class="score-labels">

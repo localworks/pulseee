@@ -1,11 +1,14 @@
 class ScoreAnswer < ApplicationRecord
+  MIN_SCORE = 1
+  MAX_SCORE = 10
+
   belongs_to :survey_question
 
   before_update :prevent_mutation
   before_destroy :prevent_mutation
 
   validates :submit_token, presence: true
-  validates :score, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 5 }
+  validates :score, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: MIN_SCORE, less_than_or_equal_to: MAX_SCORE }
   validates :survey_question_id, uniqueness: { scope: :submit_token }
 
   private

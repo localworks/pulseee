@@ -219,75 +219,51 @@ h3 {
   color: var(--primary);
 }
 
-.score-row {
+.score-slider {
   display: grid;
-  grid-template-columns: repeat(5, minmax(44px, 1fr));
-  gap: 6px;
+  gap: 16px;
 }
 
-.score-option input {
-  position: absolute;
-  opacity: 0;
-}
-
-.score-target {
+.score-value {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    box-shadow 120ms ease;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--steel);
+  font-size: 14px;
 }
 
-.score-dot {
+.score-value strong {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 9999px;
-  background: #ffffff;
-  color: var(--charcoal);
-  font-weight: 600;
-  transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    color 120ms ease,
-    transform 120ms ease;
-}
-
-.score-option:hover .score-target {
+  min-width: 72px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
   background: #fafaf9;
-  border-color: var(--hairline);
+  color: var(--steel);
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.score-option:hover .score-dot {
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
-.score-option input:focus-visible + .score-target {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
-}
-
-.score-option input:checked + .score-target {
-  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+.score-slider.is-selected .score-value strong {
   border-color: color-mix(in srgb, var(--primary) 28%, var(--hairline));
+  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  color: var(--primary);
 }
 
-.score-option input:checked + .score-target .score-dot {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
-  transform: none;
+.score-range {
+  width: 100%;
+  min-height: 36px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.score-range:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  outline-offset: 4px;
 }
 
 .score-labels {

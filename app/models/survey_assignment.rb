@@ -61,7 +61,7 @@ class SurveyAssignment < ApplicationRecord
     questions.each_with_object({}) do |question, scores|
       raw_score = score_params[question.id.to_s] || score_params[question.id]
       score = Integer(raw_score, exception: false)
-      if score.blank? || !score.between?(1, 5)
+      if score.blank? || !score.between?(ScoreAnswer::MIN_SCORE, ScoreAnswer::MAX_SCORE)
         errors.add(:base, "すべての設問に回答してください")
         next
       end

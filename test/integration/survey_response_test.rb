@@ -30,6 +30,10 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     login_as(user)
     get root_path
     assert_select "a", text: "回答する"
+    get new_survey_assignment_response_path(assignment)
+    assert_response :success
+    assert_select "input.score-range[type=range][min='1'][max='10']", count: 7
+    assert_select ".score-value strong", text: "未選択", count: 7
 
     assert_difference -> { ScoreAnswer.count }, 7 do
       post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 4) }
@@ -87,7 +91,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select ".flash.alert", text: "すべての設問に回答してください"
-    assert_select "input[checked]", count: 6
+    assert_select "input[type=hidden][name^='answers'][value='3']", count: 6
   end
 
   test "missing answers are rejected without server error" do

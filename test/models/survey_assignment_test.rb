@@ -10,7 +10,7 @@ class SurveyAssignmentTest < ActiveSupport::TestCase
 
   test "submits all scores anonymously" do
     assert_difference -> { ScoreAnswer.count }, 7 do
-      assert @assignment.submit_scores!(answers_for(5))
+      assert @assignment.submit_scores!(answers_for(10))
     end
 
     assert @assignment.reload.submitted?

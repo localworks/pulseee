@@ -79,7 +79,7 @@ erDiagram
 - `SURVEY_ASSIGNMENTS` の `(survey_id, user_id)` はユニークとする。
 - `SURVEYS.status` は `draft` / `active` のいずれかとする。
 - `SURVEY_ASSIGNMENTS.state` は `pending` / `submitted` のいずれかとする。
-- `SCORE_ANSWERS.score` は `1` から `5` の整数とする。
+- `SCORE_ANSWERS.score` は `1` から `10` の整数とする。
 - `SCORE_ANSWERS.submit_token` は `SURVEY_ASSIGNMENTS` に保存せず、個人の回答と結び付けない。
 
 自由記述に用いるテーブルは、最初のリリースでは作成しない。

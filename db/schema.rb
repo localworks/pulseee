@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_000001) do
   create_table "questions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "body", null: false
     t.datetime "created_at", null: false
@@ -30,7 +30,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.bigint "survey_question_id", null: false
     t.index ["submit_token", "survey_question_id"], name: "index_score_answers_on_submit_token_and_survey_question_id", unique: true
     t.index ["survey_question_id"], name: "index_score_answers_on_survey_question_id"
-    t.check_constraint "`score` between 1 and 5", name: "chk_score_answers_score"
+    t.check_constraint "`score` between 1 and 10", name: "chk_score_answers_score"
   end
 
   create_table "survey_assignments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
