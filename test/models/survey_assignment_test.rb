@@ -2,14 +2,14 @@ require "test_helper"
 
 class SurveyAssignmentTest < ActiveSupport::TestCase
   setup do
-    7.times { |index| Question.create!(body: "設問#{index + 1}") }
+    Question::STANDARD_BODIES.each { |body| Question.create!(body: body) }
     @user = User.create!(name: "回答者", email: "respondent@example.com", survey_subject: true)
     @survey = Survey.create!(title: "回答テスト", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     @assignment = @survey.survey_assignments.find_by!(user: @user)
   end
 
   test "submits all scores anonymously" do
-    assert_difference -> { ScoreAnswer.count }, 7 do
+    assert_difference -> { ScoreAnswer.count }, 5 do
       assert @assignment.submit_scores!(answers_for(5))
     end
 

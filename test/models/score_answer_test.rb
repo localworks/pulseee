@@ -2,9 +2,9 @@ require "test_helper"
 
 class ScoreAnswerTest < ActiveSupport::TestCase
   setup do
-    question = Question.create!(body: "標準設問")
+    Question::STANDARD_BODIES.each { |body| Question.create!(body: body) }
     survey = Survey.create!(title: "スコア", start_at: 1.hour.ago, end_at: 1.hour.from_now)
-    @survey_question = survey.survey_questions.find_by!(question: question)
+    @survey_question = survey.survey_questions.first
   end
 
   test "score must be between one and five" do

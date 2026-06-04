@@ -21,8 +21,8 @@ class SurveyTest < ActiveSupport::TestCase
   test "copies standard questions at creation time" do
     survey = Survey.create!(title: "コピー", start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
-    assert_equal 7, survey.survey_questions.count
-    assert_equal Question.order(:id).pluck(:body), survey.survey_questions.order(:order_index).pluck(:body)
+    assert_equal 5, survey.survey_questions.count
+    assert_equal Question::STANDARD_BODIES, survey.survey_questions.order(:order_index).pluck(:body)
 
     Question.first.update!(body: "変更後")
 
@@ -72,7 +72,7 @@ class SurveyTest < ActiveSupport::TestCase
   private
 
   def create_standard_questions
-    7.times { |index| Question.create!(body: "設問#{index + 1}") }
+    Question::STANDARD_BODIES.each { |body| Question.create!(body: body) }
   end
 
   def answers_for(survey, score)

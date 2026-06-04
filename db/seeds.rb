@@ -11,17 +11,7 @@ roles = Role::ROLE_NAMES.index_with do |role_name|
   Role.find_or_create_by!(name: role_name)
 end
 
-questions = [
-  "仕事に必要な情報が十分に共有されている",
-  "自分の役割や期待されている成果が明確である",
-  "チーム内で安心して意見を言える",
-  "現在の業務量は適切である",
-  "上司やチームから必要な支援を受けられている",
-  "会社の方針や優先順位に納得感がある",
-  "今の組織で働き続けたいと思う"
-]
-
-questions.each do |body|
+Question::STANDARD_BODIES.each do |body|
   Question.find_or_create_by!(body: body)
 end
 
