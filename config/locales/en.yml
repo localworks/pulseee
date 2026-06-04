@@ -29,3 +29,8 @@
 
 en:
   hello: "Hello world"
+  admin:
+    actions:
+      download_survey_results:
+        menu: "CSVダウンロード"
+        title: "CSVダウンロード"

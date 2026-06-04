@@ -1,3 +1,5 @@
+require Rails.root.join("lib/rails_admin/config/actions/download_survey_results")
+
 RailsAdmin.config do |config|
   config.asset_source = :importmap
   config.parent_controller = "ApplicationController"
@@ -26,6 +28,7 @@ RailsAdmin.config do |config|
     dashboard
     index
     show
+    download_survey_results
 
     new do
       except %w[Role SurveyQuestion SurveyAssignment ScoreAnswer]
