@@ -34,11 +34,11 @@ class Survey < ApplicationRecord
   end
 
   def standard_questions_exist
-    errors.add(:base, "標準設問を1件以上登録してください") if Question.none?
+    errors.add(:base, "標準設問を5件登録してください") unless Question.standard_questions_ready?
   end
 
   def copy_standard_questions
-    Question.order(:id).find_each.with_index(1) do |question, index|
+    Question.standard_ordered.each.with_index(1) do |question, index|
       survey_questions.create!(
         question: question,
         body: question.body,

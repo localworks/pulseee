@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    resources :surveys, only: [] do
+      resource :results, only: :show, controller: "survey_results", defaults: { format: :csv }
+    end
+  end
+
   mount RailsAdmin::Engine => "/admin", as: "rails_admin"
 
   root "home#index"

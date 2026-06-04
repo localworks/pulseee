@@ -3,7 +3,7 @@ require "test_helper"
 class SurveyResponseTest < ActionDispatch::IntegrationTest
   setup do
     OmniAuth.config.test_mode = true
-    7.times { |index| Question.create!(body: "設問#{index + 1}") }
+    Question::STANDARD_BODIES.each { |body| Question.create!(body: body) }
   end
 
   teardown do
@@ -32,14 +32,14 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "回答する"
     get new_survey_assignment_response_path(assignment)
     assert_response :success
-    assert_select "input.score-range[type=range][min='1'][max='5']", count: 7
-    assert_select "input.score-range[value='3']", count: 7
-    assert_select "input[type=hidden][name^='answers']", count: 7
+    assert_select "input.score-range[type=range][min='1'][max='5']", count: 5
+    assert_select "input.score-range[value='3']", count: 5
+    assert_select "input[type=hidden][name^='answers']", count: 5
     assert_select "input[type=hidden][name^='answers'][value]", count: 0
-    assert_select ".score-scale span", count: 35
-    assert_select ".score-value strong", text: "未選択", count: 7
+    assert_select ".score-scale span", count: 25
+    assert_select ".score-value strong", text: "未選択", count: 5
 
-    assert_difference -> { ScoreAnswer.count }, 7 do
+    assert_difference -> { ScoreAnswer.count }, 5 do
       post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 4) }
     end
     follow_redirect!
@@ -95,8 +95,8 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select ".flash.alert", text: "すべての設問に回答してください"
-    assert_select "input[type=hidden][name^='answers'][value='3']", count: 6
-    assert_select "input.score-range[value='3']", count: 7
+    assert_select "input[type=hidden][name^='answers'][value='3']", count: 4
+    assert_select "input.score-range[value='3']", count: 5
     assert_select ".score-value strong", text: "未選択", count: 1
   end
 
@@ -123,7 +123,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     login_as(user)
 
-    assert_difference -> { ScoreAnswer.count }, 7 do
+    assert_difference -> { ScoreAnswer.count }, 5 do
       post survey_assignment_response_path(assignment), params: { answers: answers }
     end
 
