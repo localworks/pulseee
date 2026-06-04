@@ -11,29 +11,29 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
-  create_table "questions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "questions", force: :cascade do |t|
     t.string "body", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "roles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
-  create_table "score_answers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "score_answers", force: :cascade do |t|
     t.integer "score", null: false
     t.string "submit_token", null: false
     t.bigint "survey_question_id", null: false
     t.index ["submit_token", "survey_question_id"], name: "index_score_answers_on_submit_token_and_survey_question_id", unique: true
     t.index ["survey_question_id"], name: "index_score_answers_on_survey_question_id"
-    t.check_constraint "`score` between 1 and 5", name: "chk_score_answers_score"
+    t.check_constraint "score between 1 and 5", name: "chk_score_answers_score"
   end
 
-  create_table "survey_assignments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "survey_assignments", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "state", default: "pending", null: false
     t.datetime "submitted_at"
@@ -44,10 +44,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.index ["survey_id", "user_id"], name: "index_survey_assignments_on_survey_id_and_user_id", unique: true
     t.index ["survey_id"], name: "index_survey_assignments_on_survey_id"
     t.index ["user_id"], name: "index_survey_assignments_on_user_id"
-    t.check_constraint "`state` in (_utf8mb4'pending',_utf8mb4'submitted')", name: "chk_survey_assignments_state"
+    t.check_constraint "state in ('pending', 'submitted')", name: "chk_survey_assignments_state"
   end
 
-  create_table "survey_questions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "survey_questions", force: :cascade do |t|
     t.string "body", null: false
     t.datetime "created_at", null: false
     t.integer "order_index", null: false
@@ -60,7 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.index ["survey_id"], name: "index_survey_questions_on_survey_id"
   end
 
-  create_table "surveys", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "surveys", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "end_at", null: false
     t.datetime "start_at", null: false
@@ -68,11 +68,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["status"], name: "index_surveys_on_status"
-    t.check_constraint "`end_at` > `start_at`", name: "chk_surveys_period"
-    t.check_constraint "`status` in (_utf8mb4'draft',_utf8mb4'active')", name: "chk_surveys_status"
+    t.check_constraint "end_at > start_at", name: "chk_surveys_period"
+    t.check_constraint "status in ('draft', 'active')", name: "chk_surveys_status"
   end
 
-  create_table "user_roles", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "user_roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "role_id", null: false
     t.datetime "updated_at", null: false
@@ -82,7 +82,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_30_000001) do
     t.index ["user_id"], name: "index_user_roles_on_user_id"
   end
 
-  create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
     t.string "name", null: false
