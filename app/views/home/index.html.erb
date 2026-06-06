@@ -36,13 +36,6 @@
             <span class="home-meta-key">回答期限</span>
             <span class="home-meta-val"><%= l @assignment.survey.end_at, format: :long %></span>
           </div>
-          <%= link_to new_survey_assignment_response_path(@assignment), class: "home-cta-btn" do %>
-            <span>
-              <span class="home-cta-hint">( Survey )</span>
-              回答する
-            </span>
-            <span class="home-arrow-circle" aria-hidden="true">→</span>
-          <% end %>
         <% else %>
           <div class="home-meta">
             <span class="home-meta-key">Status</span>
@@ -53,21 +46,42 @@
     </section>
 
     <section class="home-hero-right" aria-label="サーベイ情報">
-      <div class="home-pulse-visual">
-        <div class="home-ring home-ring-3"></div>
-        <div class="home-ring home-ring-2"></div>
-        <div class="home-ring home-ring-1"></div>
-        <div class="home-pulse-core">
-          <div class="home-pulse-text">
-            <span class="home-pulse-label"><%= @assignment&.survey&.title || "Pulseee" %></span>
-            <span class="home-pulse-divider"></span>
-            <span class="home-pulse-name"><%= @assignment&.survey&.title || "パルスサーベイ" %></span>
+      <% if @assignment %>
+        <%= link_to new_survey_assignment_response_path(@assignment), class: "home-pulse-visual home-pulse-link", aria: { label: "#{@assignment.survey.title}に回答する" } do %>
+          <div class="home-ring home-ring-3"></div>
+          <div class="home-ring home-ring-2"></div>
+          <div class="home-ring home-ring-1"></div>
+          <div class="home-pulse-core">
+            <div class="home-pulse-text">
+              <span class="home-pulse-label">( Survey )</span>
+              <span class="home-pulse-divider"></span>
+              <span class="home-pulse-name">回答する</span>
+              <span class="home-pulse-note"><%= @assignment.survey.title %></span>
+              <span class="home-arrow-circle" aria-hidden="true">→</span>
+            </div>
+          </div>
+          <div class="home-anonymous-badge" aria-label="完全匿名">
+            <span>完全<br>匿名</span>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="home-pulse-visual home-pulse-static">
+          <div class="home-ring home-ring-3"></div>
+          <div class="home-ring home-ring-2"></div>
+          <div class="home-ring home-ring-1"></div>
+          <div class="home-pulse-core">
+            <div class="home-pulse-text">
+              <span class="home-pulse-label">Status</span>
+              <span class="home-pulse-divider"></span>
+              <span class="home-pulse-name">回答はありません</span>
+              <span class="home-pulse-note">次のサーベイまでお待ちください</span>
+            </div>
+          </div>
+          <div class="home-anonymous-badge" aria-label="完全匿名">
+            <span>完全<br>匿名</span>
           </div>
         </div>
-        <div class="home-anonymous-badge" aria-label="完全匿名">
-          <span>完全<br>匿名</span>
-        </div>
-      </div>
+      <% end %>
     </section>
 
     <footer class="home-footer-note">
@@ -79,30 +93,68 @@
     </footer>
   </main>
 <% else %>
-  <main class="app-shell">
-    <section class="top-bar">
-      <div>
-        <p class="eyebrow">Pulseee</p>
-        <h1>パルスサーベイ</h1>
-      </div>
-    </section>
-
+  <main class="home-hero-shell home-hero-shell-login">
     <% flash.each do |type, message| %>
-      <div class="flash <%= type %>"><%= message %></div>
+      <div class="flash <%= type %> home-flash"><%= message %></div>
     <% end %>
 
-    <section class="login-panel">
-      <div>
-        <p class="eyebrow">Google Auth</p>
-        <h2>登録済みアカウントでログイン</h2>
+    <section class="home-hero-left" aria-labelledby="login-copy-heading">
+      <div class="home-logo-area">
+        <span class="home-logo-sub">Pulse Survey</span>
+        <span class="home-logo-main">Pulseee</span>
       </div>
-      <% unless Rails.configuration.x.google_auth_configured || Rails.configuration.x.google_auth_mock_enabled || Rails.env.test? %>
-        <p class="muted">Google認証の設定が未完了です。`GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定してください。</p>
-      <% end %>
-      <%= button_to "Googleでログイン", "/auth/google_oauth2", method: :post, data: { turbo: false }, class: "button button-primary" %>
-      <% if Rails.env.development? && !Rails.configuration.x.google_auth_configured && !Rails.configuration.x.google_auth_mock_enabled %>
-        <%= button_to "開発用ログイン", development_login_path, method: :post, class: "button button-secondary" %>
+
+      <div class="home-copy-block">
+        <div class="home-copy-inner">
+          <h1 id="login-copy-heading" class="home-copy-line">Pulseeeへ</h1>
+          <p class="home-copy-line home-copy-sub">ようこそ。</p>
+          <p class="home-copy-line home-copy-sub">今週の声を</p>
+          <p class="home-copy-line home-copy-sub">聞かせてください。</p>
+        </div>
+      </div>
+
+      <div class="home-bottom-block">
+        <div class="home-meta">
+          <span class="home-meta-key">Login</span>
+          <span class="home-meta-val">登録済みアカウントでログイン</span>
+        </div>
+        <% unless Rails.configuration.x.google_auth_configured || Rails.configuration.x.google_auth_mock_enabled || Rails.env.test? %>
+          <p class="home-login-help">Google認証の設定が未完了です。`GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定してください。</p>
+        <% end %>
+        <% if Rails.env.development? && !Rails.configuration.x.google_auth_configured && !Rails.configuration.x.google_auth_mock_enabled %>
+          <%= button_to "開発用ログイン", development_login_path, method: :post, class: "home-nav-btn home-dev-login-btn" %>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="home-hero-right" aria-label="ログイン">
+      <%= form_with url: "/auth/google_oauth2", method: :post, data: { turbo: false }, class: "home-pulse-form" do %>
+        <button class="home-pulse-visual home-pulse-link home-pulse-button" type="submit" aria-label="Googleでログイン">
+          <span class="home-ring home-ring-3"></span>
+          <span class="home-ring home-ring-2"></span>
+          <span class="home-ring home-ring-1"></span>
+          <span class="home-pulse-core">
+            <span class="home-pulse-text">
+              <span class="home-pulse-label">( Login )</span>
+              <span class="home-pulse-divider"></span>
+              <span class="home-pulse-name">Googleでログイン</span>
+              <span class="home-pulse-note">登録済みアカウントのみ</span>
+              <span class="home-arrow-circle" aria-hidden="true">→</span>
+            </span>
+          </span>
+          <span class="home-anonymous-badge" aria-label="完全匿名">
+            <span>完全<br>匿名</span>
+          </span>
+        </button>
       <% end %>
     </section>
+
+    <footer class="home-footer-note">
+      <svg class="home-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+      </svg>
+      あなたの回答は匿名で処理されます。個人は特定されません。
+    </footer>
   </main>
 <% end %>

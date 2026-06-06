@@ -29,7 +29,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     login_as(user)
     get root_path
-    assert_select "a.home-cta-btn", text: /回答する/
+    assert_select "a.home-pulse-link[href='#{new_survey_assignment_response_path(assignment)}']", text: /回答する/
     get new_survey_assignment_response_path(assignment)
     assert_response :success
     assert_select "input.score-range[type=range][min='1'][max='5']", count: 5

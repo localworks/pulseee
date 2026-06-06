@@ -198,12 +198,16 @@ h3 {
   --home-green-soft: #eef3ee;
 
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(460px, 1.1fr);
   grid-template-rows: 1fr auto;
   min-height: 100vh;
   background: var(--home-green-soft);
   color: var(--home-green-ink);
   font-family: "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+}
+
+.home-hero-shell-login {
+  grid-template-columns: minmax(0, 0.85fr) minmax(480px, 1.15fr);
 }
 
 .home-nav {
@@ -267,12 +271,11 @@ h3 {
 }
 
 .home-logo-area {
-  gap: 3px;
+  gap: 2px;
 }
 
 .home-logo-sub,
 .home-meta-key,
-.home-cta-hint,
 .home-pulse-label,
 .home-footer-note {
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -280,16 +283,18 @@ h3 {
 
 .home-logo-sub {
   color: var(--home-green-muted);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .home-logo-main {
-  color: var(--home-green-ink);
-  font-size: 22px;
-  font-weight: 400;
+  color: #2c6743;
+  font-family: "Hiragino Maru Gothic ProN", "Hannotate SC", "Chalkboard SE", "Comic Sans MS", "Yu Gothic", cursive;
+  font-size: 46px;
+  font-weight: 700;
   letter-spacing: 0;
+  line-height: 1;
 }
 
 .home-copy-block {
@@ -339,49 +344,17 @@ h3 {
   letter-spacing: 0;
 }
 
-.home-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  max-width: 320px;
-  min-height: 58px;
-  padding: 13px 20px;
-  border: 1px solid var(--home-green-muted);
-  border-radius: 3px;
-  background: transparent;
-  color: #2a4a2a;
-  cursor: pointer;
-  font-size: 14px;
-  letter-spacing: 0;
-  line-height: 1.4;
-  text-decoration: none;
-  transition: background 180ms ease;
-}
-
-.home-cta-btn:hover {
-  background: rgb(100 140 100 / 8%);
-}
-
-.home-cta-hint {
-  display: block;
-  margin-bottom: 2px;
-  color: #8aaa8a;
-  font-size: 9px;
-  letter-spacing: 0;
-}
-
 .home-arrow-circle {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--home-green-muted);
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgb(42 74 42 / 42%);
   border-radius: 9999px;
-  color: #3a6a3a;
-  font-size: 14px;
+  color: #284a2a;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 18px;
 }
 
 .home-hero-right {
@@ -398,8 +371,36 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 440px;
-  height: 440px;
+  width: clamp(500px, 45vw, 620px);
+  height: clamp(500px, 45vw, 620px);
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-pulse-link {
+  cursor: pointer;
+  transition: transform 200ms ease;
+}
+
+.home-pulse-link:hover {
+  transform: translateY(-3px);
+}
+
+.home-pulse-link:focus-visible {
+  outline: 3px solid rgb(86 69 212 / 35%);
+  outline-offset: 10px;
+}
+
+.home-pulse-button {
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background: transparent;
+  font: inherit;
+}
+
+.home-pulse-form {
+  margin: 0;
 }
 
 .home-ring {
@@ -409,19 +410,19 @@ h3 {
 }
 
 .home-ring-1 {
-  width: 340px;
-  height: 340px;
+  width: 74%;
+  height: 74%;
 }
 
 .home-ring-2 {
-  width: 390px;
-  height: 390px;
+  width: 88%;
+  height: 88%;
   border-color: rgb(80 120 80 / 10%);
 }
 
 .home-ring-3 {
-  width: 440px;
-  height: 440px;
+  width: 100%;
+  height: 100%;
   border-color: rgb(80 120 80 / 6%);
 }
 
@@ -429,8 +430,8 @@ h3 {
   position: relative;
   display: grid;
   place-items: center;
-  width: 280px;
-  height: 280px;
+  width: 68%;
+  height: 68%;
   overflow: hidden;
   border-radius: 9999px;
   background:
@@ -441,14 +442,14 @@ h3 {
 
 .home-pulse-text {
   align-items: center;
-  gap: 8px;
-  padding: 28px;
+  gap: 10px;
+  padding: 36px;
   text-align: center;
 }
 
 .home-pulse-label {
   color: #2a4a2a;
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -461,24 +462,37 @@ h3 {
 
 .home-pulse-name {
   color: #1a3a1a;
-  font-size: 14px;
+  font-size: 28px;
+  font-weight: 600;
   letter-spacing: 0;
-  line-height: 1.5;
+  line-height: 1.25;
+}
+
+.home-pulse-note,
+.home-login-help {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+
+.home-pulse-note {
+  max-width: 220px;
+  color: #426842;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .home-anonymous-badge {
   position: absolute;
-  top: 70px;
-  right: 58px;
+  top: 86px;
+  right: 72px;
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  width: 70px;
+  height: 70px;
   border: 1px solid rgb(160 130 40 / 50%);
   border-radius: 9999px;
   color: #856820;
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0;
   line-height: 1.5;
   text-align: center;
@@ -509,6 +523,18 @@ h3 {
   width: 13px;
   height: 13px;
   opacity: 0.5;
+}
+
+.home-login-help {
+  max-width: 420px;
+  margin: 0;
+  color: #7b5b1e;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.home-dev-login-btn {
+  width: fit-content;
 }
 
 .response-form {
@@ -692,6 +718,10 @@ h3 {
     grid-template-rows: auto auto auto;
   }
 
+  .home-hero-shell-login {
+    grid-template-columns: 1fr;
+  }
+
   .home-nav {
     position: static;
     justify-content: flex-end;
@@ -709,8 +739,12 @@ h3 {
     padding: 28px 24px 40px;
   }
 
+  .home-logo-main {
+    font-size: 38px;
+  }
+
   .home-copy-block {
-    min-height: 320px;
+    min-height: 280px;
   }
 
   .home-copy-line {
@@ -728,33 +762,50 @@ h3 {
   }
 
   .home-pulse-visual {
-    width: 320px;
-    height: 320px;
+    width: min(88vw, 380px);
+    height: min(88vw, 380px);
   }
 
   .home-ring-1 {
-    width: 244px;
-    height: 244px;
+    width: 74%;
+    height: 74%;
   }
 
   .home-ring-2 {
-    width: 282px;
-    height: 282px;
+    width: 88%;
+    height: 88%;
   }
 
   .home-ring-3 {
-    width: 320px;
-    height: 320px;
+    width: 100%;
+    height: 100%;
   }
 
   .home-pulse-core {
-    width: 212px;
-    height: 212px;
+    width: 68%;
+    height: 68%;
+  }
+
+  .home-pulse-text {
+    gap: 8px;
+    padding: 26px;
+  }
+
+  .home-pulse-name {
+    font-size: 22px;
+  }
+
+  .home-pulse-note {
+    max-width: 180px;
+    font-size: 11px;
   }
 
   .home-anonymous-badge {
-    top: 34px;
-    right: 36px;
+    top: 42px;
+    right: 34px;
+    width: 58px;
+    height: 58px;
+    font-size: 9px;
   }
 
   .home-footer-note {
