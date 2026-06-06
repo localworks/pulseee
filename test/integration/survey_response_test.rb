@@ -24,11 +24,17 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
   test "pending user can answer active survey once" do
     user = User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
-    survey = Survey.create!(title: "今週のサーベイ", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    survey = Survey.create!(
+      title: "今週のサーベイ",
+      status: :active,
+      start_at: 1.hour.ago,
+      end_at: Time.zone.local(2026, 6, 13, 13, 25)
+    )
     assignment = survey.survey_assignments.find_by!(user: user)
 
     login_as(user)
     get root_path
+    assert_select ".home-deadline-val", text: "2026 6/13 13:25"
     assert_select "a.home-pulse-link[href='#{new_survey_assignment_response_path(assignment)}']", text: /START/
     get new_survey_assignment_response_path(assignment)
     assert_response :success
