@@ -58,6 +58,14 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "stale google callback redirects to login" do
+    OmniAuth.config.test_mode = false
+
+    get "/auth/google_oauth2/callback", params: { state: "stale-state", code: "stale-code" }
+
+    assert_redirected_to login_path
+  end
+
   test "development login is unavailable outside development" do
     post development_login_path
 
