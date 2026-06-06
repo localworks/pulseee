@@ -180,6 +180,9 @@ h3 {
   border-radius: 8px;
   color: var(--charcoal);
   font-size: 14px;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 
 .flash.notice {
@@ -188,6 +191,11 @@ h3 {
 
 .flash.alert {
   border-color: color-mix(in srgb, var(--error) 35%, var(--hairline));
+}
+
+.flash-dismissing {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 .home-hero-shell {
