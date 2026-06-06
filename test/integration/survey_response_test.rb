@@ -32,12 +32,14 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "回答する"
     get new_survey_assignment_response_path(assignment)
     assert_response :success
-    assert_select "input.score-range[type=range][min='1'][max='5']", count: 5
-    assert_select "input.score-range[value='3']", count: 5
-    assert_select "input[type=hidden][name^='answers']", count: 5
-    assert_select "input[type=hidden][name^='answers'][value]", count: 0
-    assert_select ".score-scale span", count: 25
-    assert_select ".score-value strong", text: "未選択", count: 5
+    assert_select ".survey-progress-step", count: 5
+    assert_select ".response-prompt h2", text: "あなたの仕事についてうかがいます。最もあてはまるものを選択してください。"
+    assert_select ".question-block", count: 5
+    assert_select "input.answer-choice-input[type=radio][name^='answers']", count: 25
+    assert_select "input.answer-choice-input[type=radio][required]", count: 25
+    assert_select "input.answer-choice-input[type=radio][checked]", count: 0
+    assert_select ".answer-choice-label", text: "そうだ", count: 5
+    assert_select ".answer-choice-label", text: "ちがう", count: 5
 
     assert_difference -> { ScoreAnswer.count }, 5 do
       post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 4) }
@@ -95,9 +97,8 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select ".flash.alert", text: "すべての設問に回答してください"
-    assert_select "input[type=hidden][name^='answers'][value='3']", count: 4
-    assert_select "input.score-range[value='3']", count: 5
-    assert_select ".score-value strong", text: "未選択", count: 1
+    assert_select "input.answer-choice-input[type=radio][value='3'][checked]", count: 4
+    assert_select "input.answer-choice-input[type=radio][checked]", count: 4
   end
 
   test "missing answers are rejected without server error" do

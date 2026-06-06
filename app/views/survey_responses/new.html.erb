@@ -1,63 +1,66 @@
-<main class="app-shell">
-  <section class="top-bar">
-    <div>
-      <p class="eyebrow">Survey</p>
-      <h1><%= @assignment.survey.title %></h1>
-    </div>
-    <%= link_to "戻る", root_path, class: "button button-secondary" %>
-  </section>
+<% progress_labels = [ "仕事", "直近\n1ヶ月", "周囲の\n人々", "満足度", "やりがい" ] %>
+<% answer_options = [
+  [ 5, "そうだ" ],
+  [ 4, "まあそうだ" ],
+  [ 3, "どちらでも言えない" ],
+  [ 2, "ややちがう" ],
+  [ 1, "ちがう" ]
+] %>
 
+<main class="response-page">
   <% flash.each do |type, message| %>
     <div class="flash <%= type %>"><%= message %></div>
   <% end %>
 
-  <%= form_with url: survey_assignment_response_path(@assignment), method: :post, class: "response-form" do %>
+  <nav class="survey-progress" aria-label="サーベイの進捗">
+    <% progress_labels.each.with_index(1) do |label, index| %>
+      <% active = index == progress_labels.length %>
+      <div class="survey-progress-step <%= "is-active" if active %>">
+        <span class="survey-progress-node">
+          <span class="survey-progress-number"><%= index %></span>
+          <% unless active %>
+            <span class="survey-progress-check" aria-hidden="true">✓</span>
+          <% end %>
+        </span>
+        <span class="survey-progress-label"><%= simple_format(label, {}, wrapper_tag: "span") %></span>
+      </div>
+    <% end %>
+  </nav>
+
+  <header class="response-hero">
+    <%= link_to "戻る", root_path, class: "button button-secondary response-back" %>
+    <p class="eyebrow">Survey</p>
+    <h1><%= @assignment.survey.title %></h1>
+  </header>
+
+  <section class="response-prompt">
+    <h2>あなたの仕事についてうかがいます。最もあてはまるものを選択してください。</h2>
+  </section>
+
+  <%= form_with url: survey_assignment_response_path(@assignment), method: :post, class: "response-form response-choice-form" do %>
     <% @assignment.survey.survey_questions.ordered.each do |question| %>
       <fieldset class="question-block">
         <legend>
-          <span>Q<%= question.order_index %></span>
+          <span><%= question.order_index %>.</span>
           <%= question.body %>
         </legend>
 
         <% selected_score = Integer(@answers[question.id.to_s], exception: false) %>
         <% selected_score = nil unless selected_score&.between?(ScoreAnswer::MIN_SCORE, ScoreAnswer::MAX_SCORE) %>
-        <% display_score = selected_score || "未選択" %>
-        <% slider_score = selected_score || ScoreAnswer::DEFAULT_SCORE %>
 
-        <div class="score-slider" data-controller="score-slider">
-          <div class="score-value" aria-live="polite">
-            <span>現在の評価</span>
-            <strong data-score-slider-target="value"><%= display_score %></strong>
-          </div>
-
-          <%= hidden_field_tag "answers[#{question.id}]", selected_score, data: { score_slider_target: "input" } %>
-          <%= tag.input type: "range",
-                        id: "score_range_#{question.id}",
-                        class: "score-range",
-                        min: ScoreAnswer::MIN_SCORE,
-                        max: ScoreAnswer::MAX_SCORE,
-                        step: 1,
-                        value: slider_score,
-                        data: {
-                          score_slider_target: "range",
-                          action: "input->score-slider#select change->score-slider#select"
-                        },
-                        aria: { label: "Q#{question.order_index}の評価" } %>
-
-          <div class="score-scale" aria-hidden="true">
-            <% score_steps = ScoreAnswer::MAX_SCORE - ScoreAnswer::MIN_SCORE %>
-            <% (ScoreAnswer::MIN_SCORE..ScoreAnswer::MAX_SCORE).each do |score| %>
-              <% score_ratio = (score - ScoreAnswer::MIN_SCORE).to_f / score_steps %>
-              <% score_percent = score_ratio * 100 %>
-              <% score_offset = 20 * (0.5 - score_ratio) %>
-              <span style="--score-left: calc(<%= score_percent %>% <%= score_offset.negative? ? "-" : "+" %> <%= score_offset.abs %>px)"><%= score %></span>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="score-labels">
-          <span>まったくそう思わない</span>
-          <span>とてもそう思う</span>
+        <div class="answer-choice-group">
+          <% answer_options.each do |score, label| %>
+            <% input_id = "answer_#{question.id}_#{score}" %>
+            <label class="answer-choice" for="<%= input_id %>">
+              <%= radio_button_tag "answers[#{question.id}]",
+                                   score,
+                                   selected_score == score,
+                                   id: input_id,
+                                   class: "answer-choice-input",
+                                   required: true %>
+              <span class="answer-choice-label"><%= label %></span>
+            </label>
+          <% end %>
         </div>
       </fieldset>
     <% end %>
