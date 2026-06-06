@@ -199,8 +199,6 @@ GEM
     msgpack (1.8.0)
     multi_xml (0.9.1)
       bigdecimal (>= 3.1, < 5)
-    mysql2 (0.5.7)
-      bigdecimal
     nested_form (0.3.2)
     net-http (0.9.1)
       uri (>= 0.11.1)
@@ -447,6 +445,7 @@ PLATFORMS
   aarch64-linux-musl
   arm-linux-gnu
   arm-linux-musl
+  arm64-darwin-24
   arm64-darwin-25
   x86_64-linux
   x86_64-linux-gnu
@@ -463,7 +462,6 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
-  mysql2 (~> 0.5)
   omniauth-google-oauth2
   omniauth-rails_csrf_protection
   pg (~> 1.5)
@@ -550,7 +548,6 @@ CHECKSUMS
   minitest (6.0.6) sha256=153ea36d1d987a62942382b61075745042a2b3123b1cd48f4c3675af9cc7d6f1
   msgpack (1.8.0) sha256=e64ce0212000d016809f5048b48eb3a65ffb169db22238fb4b72472fecb2d732
   multi_xml (0.9.1) sha256=7ce766b59c17241ed62976caeae1fae9b2431b263398c35396239a68c4a64e57
-  mysql2 (0.5.7) sha256=ba09ede515a0ae8a7192040a1b778c0fb0f025fa5877e9be895cd325fa5e9d7b
   nested_form (0.3.2) sha256=b1c468d7eac781235861c2f74fc9f675df0c4d915d5724aaf7fd29f7891c0538
   net-http (0.9.1) sha256=25ba0b67c63e89df626ed8fac771d0ad24ad151a858af2cc8e6a716ca4336996
   net-imap (0.6.4) sha256=9a5598c67a3022c284d98430ef1d4948e7dbdb62596f61081ea8ca933270a02b
