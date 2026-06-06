@@ -352,19 +352,6 @@ h3 {
   letter-spacing: 0;
 }
 
-.home-arrow-circle {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgb(42 74 42 / 42%);
-  border-radius: 9999px;
-  color: #284a2a;
-  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: 18px;
-}
-
 .home-hero-right {
   position: relative;
   display: flex;
@@ -438,14 +425,16 @@ h3 {
 
 .home-pulse-text {
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 36px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
   text-align: center;
 }
 
 .home-pulse-label {
-  color: #2a4a2a;
-  font-size: 12px;
+  color: rgb(42 74 42 / 64%);
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -457,11 +446,11 @@ h3 {
 }
 
 .home-pulse-name {
-  color: #1a3a1a;
-  font-size: 28px;
-  font-weight: 600;
+  color: #183a24;
+  font-size: 44px;
+  font-weight: 500;
   letter-spacing: 0;
-  line-height: 1.25;
+  line-height: 1;
 }
 
 .home-pulse-note,
@@ -471,9 +460,17 @@ h3 {
 
 .home-pulse-note {
   max-width: 240px;
-  color: #426842;
-  font-size: 12px;
-  line-height: 1.55;
+  color: rgb(24 58 36 / 70%);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.home-pulse-arrow {
+  display: block;
+  margin-top: 8px;
+  color: rgb(24 58 36 / 54%);
+  font-size: 24px;
+  line-height: 1;
 }
 
 .home-anonymous-badge {
