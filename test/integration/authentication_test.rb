@@ -72,7 +72,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select ".flash.notice", text: "ログアウトしました"
     assert_select ".home-meta-val", text: "登録済みアカウントでログイン"
-    assert_select "button.home-pulse-button", text: /Googleでログイン/
+    assert_select "button.google-login-button", text: /Google でログイン/
   end
 
   test "rails admin is restricted to system admins" do
