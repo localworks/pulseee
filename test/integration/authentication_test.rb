@@ -43,7 +43,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
 
     admin = User.find_by(email: "kim@localworks.jp")
     assert_response :success
-    assert_select "h2", text: "Kimさん"
+    assert_select ".home-copy-line", text: "Kimさん"
     assert_select "a", text: "管理画面"
     assert_equal "Kim", admin.name
     assert admin.survey_subject?
@@ -71,7 +71,8 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
     follow_redirect!
     assert_select ".flash.notice", text: "ログアウトしました"
-    assert_select "h2", text: "登録済みアカウントでログイン"
+    assert_select ".home-meta-val", text: "登録済みアカウントでログイン", count: 0
+    assert_select "button.google-login-button", text: /Google でログイン/
   end
 
   test "rails admin is restricted to system admins" do

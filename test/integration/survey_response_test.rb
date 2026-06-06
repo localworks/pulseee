@@ -19,17 +19,23 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "h2", text: "利用者さん"
+    assert_select ".home-copy-line", text: "利用者さん"
   end
 
   test "pending user can answer active survey once" do
     user = User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
-    survey = Survey.create!(title: "今週のサーベイ", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    survey = Survey.create!(
+      title: "今週のサーベイ",
+      status: :active,
+      start_at: 1.hour.ago,
+      end_at: Time.zone.local(2026, 6, 13, 13, 25)
+    )
     assignment = survey.survey_assignments.find_by!(user: user)
 
     login_as(user)
     get root_path
-    assert_select "a", text: "回答する"
+    assert_select ".home-deadline-val", text: "2026 6/13 13:25"
+    assert_select "a.home-pulse-link[href='#{new_survey_assignment_response_path(assignment)}']", text: /START/
     get new_survey_assignment_response_path(assignment)
     assert_response :success
     assert_select "input.score-range[type=range][min='1'][max='5']", count: 5
@@ -45,7 +51,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_select ".flash.notice", text: "回答を送信しました"
-    assert_select "h3", text: "回答が必要なサーベイはありません"
+    assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
 
     assert_no_difference -> { ScoreAnswer.count } do
       post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 5) }
@@ -68,7 +74,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     login_as(user)
     get root_path
-    assert_select "h3", text: "回答が必要なサーベイはありません"
+    assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
     get new_survey_assignment_response_path(assignment)
     follow_redirect!
     assert_select ".flash.alert", text: "回答が必要なサーベイはありません"
@@ -77,7 +83,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     Survey.create!(title: "対象外には出ない", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     login_as(other)
     get root_path
-    assert_select "h3", text: "回答が必要なサーベイはありません"
+    assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
   end
 
   test "partial answers keep input and do not save" do
