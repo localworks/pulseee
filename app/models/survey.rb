@@ -9,6 +9,7 @@ class Survey < ApplicationRecord
   validate :end_at_after_start_at
   validate :standard_questions_exist, on: :create
 
+  before_validation :ensure_standard_questions, on: :create
   after_create :copy_standard_questions
   after_save :create_assignments_when_first_active
   before_destroy :ensure_deletable
@@ -35,6 +36,10 @@ class Survey < ApplicationRecord
 
   def standard_questions_exist
     errors.add(:base, "標準設問を5件登録してください") unless Question.standard_questions_ready?
+  end
+
+  def ensure_standard_questions
+    Question.ensure_standard_questions!
   end
 
   def copy_standard_questions

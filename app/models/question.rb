@@ -23,6 +23,12 @@ class Question < ApplicationRecord
     standard_ordered.size == STANDARD_BODIES.size
   end
 
+  def self.ensure_standard_questions!
+    STANDARD_BODIES.each do |body|
+      find_or_create_by!(body: body)
+    end
+  end
+
   private
 
   def prevent_destroy

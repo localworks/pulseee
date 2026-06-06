@@ -11,9 +11,7 @@ roles = Role::ROLE_NAMES.index_with do |role_name|
   Role.find_or_create_by!(name: role_name)
 end
 
-Question::STANDARD_BODIES.each do |body|
-  Question.find_or_create_by!(body: body)
-end
+Question.ensure_standard_questions!
 
 InitialAdminProvisioner.call if Rails.env.production? && ENV["SEED_ADMIN_EMAIL"].present?
 

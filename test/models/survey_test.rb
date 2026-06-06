@@ -29,12 +29,13 @@ class SurveyTest < ActiveSupport::TestCase
     assert_not_equal "変更後", survey.survey_questions.order(:order_index).first.body
   end
 
-  test "cannot create without standard questions" do
+  test "creates standard questions when missing" do
     Question.delete_all
 
-    survey = Survey.new(title: "設問なし", start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    survey = Survey.create!(title: "設問なし", start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
-    assert_not survey.valid?
+    assert_equal 5, Question.count
+    assert_equal Question::STANDARD_BODIES, survey.survey_questions.order(:order_index).pluck(:body)
   end
 
   test "activating survey creates fixed assignments once" do
