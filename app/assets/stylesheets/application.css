@@ -309,12 +309,16 @@ h3 {
   display: flex;
   flex: 1;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .home-copy-inner {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 4px;
+  width: min(100%, 360px);
+  text-align: left;
 }
 
 .home-login-actions {
@@ -327,15 +331,15 @@ h3 {
 
 .home-copy-line {
   color: #1a2a1a;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 400;
   letter-spacing: 0;
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
 .home-copy-sub {
   color: var(--home-green-text);
-  font-size: 28px;
+  font-size: 32px;
 }
 
 .home-bottom-block {
@@ -807,12 +811,12 @@ h3 {
   }
 
   .home-copy-line {
-    font-size: 25px;
+    font-size: 27px;
     letter-spacing: 0;
   }
 
   .home-copy-sub {
-    font-size: 23px;
+    font-size: 25px;
   }
 
   .home-hero-right {
