@@ -47,12 +47,14 @@ class SurveyTest < ActiveSupport::TestCase
     assert_equal [ subject.id ], survey.survey_assignments.pluck(:user_id)
     assert_equal "pending", survey.survey_assignments.first.state
 
-    other.update!(survey_subject: true)
     subject.update!(survey_subject: false)
+    other.update!(survey_subject: true)
     survey.update!(status: :draft)
     survey.update!(status: :active)
 
-    assert_equal [ subject.id ], survey.survey_assignments.reload.pluck(:user_id)
+    assert_equal [ subject.id, other.id ].sort, survey.survey_assignments.reload.pluck(:user_id).sort
+    assert_not subject.next_pending_survey_assignment
+    assert_equal survey.survey_assignments.find_by(user: other), other.next_pending_survey_assignment
   end
 
   test "only unanswered draft surveys can be deleted" do
