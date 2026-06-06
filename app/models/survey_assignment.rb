@@ -9,14 +9,15 @@ class SurveyAssignment < ApplicationRecord
 
   scope :answerable, -> {
     pending
-      .joins(:survey)
+      .joins(:survey, :user)
       .merge(Survey.currently_active)
+      .where(users: { survey_subject: true })
       .where("exists (select 1 from survey_questions where survey_questions.survey_id = survey_assignments.survey_id)")
       .order("surveys.end_at asc")
   }
 
   def answerable?
-    pending? && survey.currently_active? && survey.survey_questions.exists?
+    pending? && user.survey_subject? && survey.currently_active? && survey.survey_questions.exists?
   end
 
   def submit_scores!(score_params)

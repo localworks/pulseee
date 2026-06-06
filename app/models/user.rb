@@ -4,6 +4,7 @@ class User < ApplicationRecord
   has_many :survey_assignments, dependent: :restrict_with_error
 
   before_validation :normalize_email
+  after_save :create_assignments_for_currently_active_surveys, if: :survey_subject?
   before_destroy :prevent_destroy
 
   validates :name, presence: true
@@ -21,6 +22,14 @@ class User < ApplicationRecord
 
   def normalize_email
     self.email = email.to_s.strip.downcase
+  end
+
+  def create_assignments_for_currently_active_surveys
+    Survey.currently_active.find_each do |survey|
+      survey.survey_assignments.find_or_create_by!(user: self) do |assignment|
+        assignment.state = :pending
+      end
+    end
   end
 
   def prevent_destroy

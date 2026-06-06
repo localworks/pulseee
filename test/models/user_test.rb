@@ -1,6 +1,10 @@
 require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
+  setup do
+    create_standard_questions
+  end
+
   test "email is normalized and unique" do
     User.create!(name: "利用者", email: "USER@example.com", survey_subject: true)
     duplicate = User.new(name: "重複", email: " user@example.com ", survey_subject: true)
@@ -18,5 +22,27 @@ class UserTest < ActiveSupport::TestCase
     user.roles << role
 
     assert user.system_admin?
+  end
+
+  test "survey subject receives assignments for currently active surveys" do
+    user = User.create!(name: "対象者", email: "subject@example.com", survey_subject: false)
+    active = Survey.create!(title: "実施中", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    draft = Survey.create!(title: "下書き", status: :draft, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    expired = Survey.create!(title: "期限切れ", status: :active, start_at: 2.hours.ago, end_at: 1.hour.ago)
+
+    assert_empty user.survey_assignments
+
+    user.update!(survey_subject: true)
+
+    assert_equal [ active.id ], user.survey_assignments.pluck(:survey_id)
+    assert_equal "pending", user.survey_assignments.first.state
+    assert_not_includes user.survey_assignments.pluck(:survey_id), draft.id
+    assert_not_includes user.survey_assignments.pluck(:survey_id), expired.id
+  end
+
+  private
+
+  def create_standard_questions
+    Question::STANDARD_BODIES.each { |body| Question.find_or_create_by!(body: body) }
   end
 end
