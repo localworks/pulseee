@@ -1,47 +1,96 @@
-<main class="app-shell">
-  <section class="top-bar">
-    <div>
-      <p class="eyebrow">Pulseee</p>
-      <h1>パルスサーベイ</h1>
-    </div>
-
-    <% if current_user %>
-      <div class="top-actions">
-        <% if current_user.system_admin? %>
-          <%= link_to "管理画面", rails_admin_path, class: "button button-secondary" %>
-        <% end %>
-        <%= button_to "ログアウト", logout_path, method: :delete, class: "button button-ghost" %>
-      </div>
-    <% end %>
-  </section>
-
-  <% flash.each do |type, message| %>
-    <div class="flash <%= type %>"><%= message %></div>
-  <% end %>
-
-  <% if current_user %>
-    <section class="work-panel">
-      <div>
-        <p class="eyebrow">Today</p>
-        <h2><%= current_user.name %>さん</h2>
-      </div>
-
-      <% if @assignment %>
-        <div class="survey-summary">
-          <div>
-            <p class="muted">回答期限</p>
-            <p class="deadline"><%= l @assignment.survey.end_at, format: :long %></p>
-          </div>
-          <h3><%= @assignment.survey.title %></h3>
-          <%= link_to "回答する", new_survey_assignment_response_path(@assignment), class: "button button-primary" %>
-        </div>
-      <% else %>
-        <div class="empty-state">
-          <h3>回答が必要なサーベイはありません</h3>
-        </div>
+<% if current_user %>
+  <main class="home-hero-shell">
+    <nav class="home-nav" aria-label="ホーム操作">
+      <% if current_user.system_admin? %>
+        <%= link_to "管理画面", rails_admin_path, class: "home-nav-btn" %>
       <% end %>
+      <%= button_to "ログアウト", logout_path, method: :delete, class: "home-nav-btn" %>
+    </nav>
+
+    <% flash.each do |type, message| %>
+      <div class="flash <%= type %> home-flash"><%= message %></div>
+    <% end %>
+
+    <section class="home-hero-left" aria-labelledby="home-copy-heading">
+      <div class="home-logo-area">
+        <span class="home-logo-sub">Pulse Survey</span>
+        <span class="home-logo-main">Pulseee</span>
+      </div>
+
+      <div class="home-copy-block">
+        <div class="home-copy-inner">
+          <h1 id="home-copy-heading" class="home-copy-line"><%= current_user.name %>さん</h1>
+          <% if @assignment %>
+            <p class="home-copy-line home-copy-sub">今週の声を</p>
+            <p class="home-copy-line home-copy-sub">聞かせてください。</p>
+          <% else %>
+            <p class="home-copy-line home-copy-sub">今週の回答は</p>
+            <p class="home-copy-line home-copy-sub">ありません。</p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="home-bottom-block">
+        <% if @assignment %>
+          <div class="home-meta">
+            <span class="home-meta-key">回答期限</span>
+            <span class="home-meta-val"><%= l @assignment.survey.end_at, format: :long %></span>
+          </div>
+          <%= link_to new_survey_assignment_response_path(@assignment), class: "home-cta-btn" do %>
+            <span>
+              <span class="home-cta-hint">( Survey )</span>
+              回答する
+            </span>
+            <span class="home-arrow-circle" aria-hidden="true">→</span>
+          <% end %>
+        <% else %>
+          <div class="home-meta">
+            <span class="home-meta-key">Status</span>
+            <span class="home-meta-val">回答が必要なサーベイはありません</span>
+          </div>
+        <% end %>
+      </div>
     </section>
-  <% else %>
+
+    <section class="home-hero-right" aria-label="サーベイ情報">
+      <div class="home-pulse-visual">
+        <div class="home-ring home-ring-3"></div>
+        <div class="home-ring home-ring-2"></div>
+        <div class="home-ring home-ring-1"></div>
+        <div class="home-pulse-core">
+          <div class="home-pulse-text">
+            <span class="home-pulse-label"><%= @assignment&.survey&.title || "Pulseee" %></span>
+            <span class="home-pulse-divider"></span>
+            <span class="home-pulse-name"><%= @assignment&.survey&.title || "パルスサーベイ" %></span>
+          </div>
+        </div>
+        <div class="home-anonymous-badge" aria-label="完全匿名">
+          <span>完全<br>匿名</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="home-footer-note">
+      <svg class="home-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="5" y="11" width="14" height="10" rx="2" />
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+      </svg>
+      あなたの回答は匿名で処理されます。個人は特定されません。
+    </footer>
+  </main>
+<% else %>
+  <main class="app-shell">
+    <section class="top-bar">
+      <div>
+        <p class="eyebrow">Pulseee</p>
+        <h1>パルスサーベイ</h1>
+      </div>
+    </section>
+
+    <% flash.each do |type, message| %>
+      <div class="flash <%= type %>"><%= message %></div>
+    <% end %>
+
     <section class="login-panel">
       <div>
         <p class="eyebrow">Google Auth</p>
@@ -55,5 +104,5 @@
         <%= button_to "開発用ログイン", development_login_path, method: :post, class: "button button-secondary" %>
       <% end %>
     </section>
-  <% end %>
-</main>
+  </main>
+<% end %>

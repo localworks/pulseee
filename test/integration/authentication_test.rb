@@ -43,7 +43,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
 
     admin = User.find_by(email: "kim@localworks.jp")
     assert_response :success
-    assert_select "h2", text: "Kimさん"
+    assert_select ".home-copy-line", text: "Kimさん"
     assert_select "a", text: "管理画面"
     assert_equal "Kim", admin.name
     assert admin.survey_subject?

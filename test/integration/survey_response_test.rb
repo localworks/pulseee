@@ -19,7 +19,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "h2", text: "利用者さん"
+    assert_select ".home-copy-line", text: "利用者さん"
   end
 
   test "pending user can answer active survey once" do
@@ -29,7 +29,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     login_as(user)
     get root_path
-    assert_select "a", text: "回答する"
+    assert_select "a.home-cta-btn", text: /回答する/
     get new_survey_assignment_response_path(assignment)
     assert_response :success
     assert_select "input.score-range[type=range][min='1'][max='5']", count: 5
@@ -45,7 +45,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_select ".flash.notice", text: "回答を送信しました"
-    assert_select "h3", text: "回答が必要なサーベイはありません"
+    assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
 
     assert_no_difference -> { ScoreAnswer.count } do
       post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 5) }
@@ -68,7 +68,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
 
     login_as(user)
     get root_path
-    assert_select "h3", text: "回答が必要なサーベイはありません"
+    assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
     get new_survey_assignment_response_path(assignment)
     follow_redirect!
     assert_select ".flash.alert", text: "回答が必要なサーベイはありません"
@@ -77,7 +77,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     Survey.create!(title: "対象外には出ない", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     login_as(other)
     get root_path
-    assert_select "h3", text: "回答が必要なサーベイはありません"
+    assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
   end
 
   test "partial answers keep input and do not save" do
