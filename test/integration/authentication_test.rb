@@ -33,6 +33,23 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert", text: "登録済みのGoogleアカウントでログインしてください"
   end
 
+  test "seed admin email can bootstrap first production login" do
+    with_seed_admin(email: "kim@localworks.jp", name: "Kim") do
+      mock_google_auth("kim@localworks.jp")
+
+      post "/auth/google_oauth2"
+      follow_all_redirects
+    end
+
+    admin = User.find_by(email: "kim@localworks.jp")
+    assert_response :success
+    assert_select "h2", text: "Kimさん"
+    assert_select "a", text: "管理画面"
+    assert_equal "Kim", admin.name
+    assert admin.survey_subject?
+    assert admin.system_admin?
+  end
+
   test "missing google configuration route stays inside app" do
     post "/auth/google_oauth2", env: { "omniauth.test_mode" => false }
 
@@ -91,6 +108,17 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     mock_google_auth(user.email)
     post "/auth/google_oauth2"
     follow_all_redirects
+  end
+
+  def with_seed_admin(email:, name:)
+    previous_email = ENV["SEED_ADMIN_EMAIL"]
+    previous_name = ENV["SEED_ADMIN_NAME"]
+    ENV["SEED_ADMIN_EMAIL"] = email
+    ENV["SEED_ADMIN_NAME"] = name
+    yield
+  ensure
+    ENV["SEED_ADMIN_EMAIL"] = previous_email
+    ENV["SEED_ADMIN_NAME"] = previous_name
   end
 
   def follow_all_redirects

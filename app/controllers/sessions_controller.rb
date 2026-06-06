@@ -19,7 +19,8 @@ class SessionsController < ApplicationController
 
   def create
     auth = request.env["omniauth.auth"]
-    user = User.find_by(email: auth_email(auth))
+    email = auth_email(auth)
+    user = User.find_by(email: email) || initial_admin_user(email)
 
     if user
       reset_session
@@ -44,5 +45,11 @@ class SessionsController < ApplicationController
 
   def auth_email(auth)
     auth&.dig("info", "email").to_s.strip.downcase
+  end
+
+  def initial_admin_user(email)
+    return unless ENV["SEED_ADMIN_EMAIL"].to_s.strip.downcase == email
+
+    InitialAdminProvisioner.call(email: email)
   end
 end
