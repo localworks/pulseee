@@ -6,6 +6,7 @@ google_auth_configured = google_client_id_valid && google_client_secret_valid
 google_auth_mock_enabled = Rails.env.development? && ENV["MOCK_GOOGLE_AUTH"] == "1"
 
 Rails.application.config.x.google_auth_configured = google_auth_configured
+Rails.application.config.x.google_auth_mock_enabled = google_auth_mock_enabled
 
 if google_auth_mock_enabled
   OmniAuth.config.test_mode = true
