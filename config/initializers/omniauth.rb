@@ -8,6 +8,28 @@ google_auth_mock_enabled = Rails.env.development? && ENV["MOCK_GOOGLE_AUTH"] == 
 Rails.application.config.x.google_auth_configured = google_auth_configured
 Rails.application.config.x.google_auth_mock_enabled = google_auth_mock_enabled
 
+class OmniAuthCallbackStateGuard
+  CALLBACK_PATH = "/auth/google_oauth2/callback"
+
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    request = Rack::Request.new(env)
+
+    if !OmniAuth.config.test_mode && request.path == CALLBACK_PATH && request.session["omniauth.state"].blank?
+      return [
+        302,
+        { "location" => "/login", "content-type" => "text/html; charset=utf-8" },
+        []
+      ]
+    end
+
+    @app.call(env)
+  end
+end
+
 if google_auth_mock_enabled
   OmniAuth.config.test_mode = true
   OmniAuth.config.mock_auth[:google_oauth2] = OmniAuth::AuthHash.new(
@@ -19,6 +41,8 @@ if google_auth_mock_enabled
     }
   )
 end
+
+Rails.application.config.middleware.use OmniAuthCallbackStateGuard
 
 Rails.application.config.middleware.use OmniAuth::Builder do
   next unless Rails.env.test? || google_auth_configured || google_auth_mock_enabled
