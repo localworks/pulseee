@@ -15,14 +15,7 @@ Question::STANDARD_BODIES.each do |body|
   Question.find_or_create_by!(body: body)
 end
 
-if Rails.env.production? && ENV["SEED_ADMIN_EMAIL"].present?
-  admin = User.find_or_initialize_by(email: ENV["SEED_ADMIN_EMAIL"])
-  admin.update!(
-    name: ENV.fetch("SEED_ADMIN_NAME", ENV["SEED_ADMIN_EMAIL"].split("@").first),
-    survey_subject: true
-  )
-  admin.roles = [ roles.fetch("system_admin"), roles.fetch("member") ]
-end
+InitialAdminProvisioner.call if Rails.env.production? && ENV["SEED_ADMIN_EMAIL"].present?
 
 if Rails.env.development?
   admin = User.find_or_initialize_by(email: "admin@example.com")
