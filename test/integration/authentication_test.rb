@@ -71,7 +71,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
     follow_redirect!
     assert_select ".flash.notice", text: "ログアウトしました"
-    assert_select ".home-meta-val", text: "登録済みアカウントでログイン"
+    assert_select ".home-meta-val", text: "登録済みアカウントでログイン", count: 0
     assert_select "button.google-login-button", text: /Google でログイン/
   end
 
