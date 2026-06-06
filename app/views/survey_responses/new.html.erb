@@ -8,7 +8,7 @@
   </section>
 
   <% flash.each do |type, message| %>
-    <div class="flash <%= type %>"><%= message %></div>
+    <div class="flash <%= type %>" data-controller="flash"><%= message %></div>
   <% end %>
 
   <%= form_with url: survey_assignment_response_path(@assignment), method: :post, class: "response-form" do %>

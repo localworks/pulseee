@@ -8,7 +8,7 @@
     </nav>
 
     <% flash.each do |type, message| %>
-      <div class="flash <%= type %> home-flash"><%= message %></div>
+      <div class="flash <%= type %> home-flash" data-controller="flash"><%= message %></div>
     <% end %>
 
     <section class="home-hero-left" aria-labelledby="home-copy-heading">
@@ -94,7 +94,7 @@
 <% else %>
   <main class="home-hero-shell home-hero-shell-login">
     <% flash.each do |type, message| %>
-      <div class="flash <%= type %> home-flash"><%= message %></div>
+      <div class="flash <%= type %> home-flash" data-controller="flash"><%= message %></div>
     <% end %>
 
     <section class="home-hero-left" aria-labelledby="login-copy-heading">
