@@ -25,6 +25,20 @@ http://localhost:3000/auth/google_oauth2/callback
 http://127.0.0.1:3000/auth/google_oauth2/callback
 ```
 
+### ローカル開発でGoogle認証をモックする
+
+ローカル開発で実際のGoogle OAuthを使わずに通常のOmniAuthコールバック経路を確認したい場合は、`MOCK_GOOGLE_AUTH=1` を指定してください。
+
+```bash
+MOCK_GOOGLE_AUTH=1 bin/rails server
+```
+
+モックユーザーのメールアドレスは、既定では seed に含まれる `kim@localworks.jp` です。別の事前登録ユーザーで確認したい場合は `DEV_LOGIN_EMAIL` を指定してください。
+
+```bash
+MOCK_GOOGLE_AUTH=1 DEV_LOGIN_EMAIL="member@example.com" bin/rails server
+```
+
 ## 開発用ログイン
 
 Google認証を設定していない開発環境では、ログイン画面に「開発用ログイン」ボタンが表示されます。
