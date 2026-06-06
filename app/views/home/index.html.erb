@@ -34,7 +34,7 @@
         <% if @assignment %>
           <div class="home-meta">
             <span class="home-meta-key">回答期限</span>
-            <span class="home-meta-val"><%= l @assignment.survey.end_at, format: :long %></span>
+            <span class="home-meta-val home-deadline-val"><%= l @assignment.survey.end_at, format: :long %></span>
           </div>
         <% else %>
           <div class="home-meta">
