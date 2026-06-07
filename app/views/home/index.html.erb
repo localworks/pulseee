@@ -16,11 +16,19 @@
 
       <div class="home-copy-block">
         <div class="home-copy-inner">
-          <h1 id="home-copy-heading" class="home-copy-line"><%= current_user.name %>さん</h1>
           <% if @assignment %>
-            <p class="home-copy-line home-copy-sub">今週の声を</p>
-            <p class="home-copy-line home-copy-sub">聞かせてください。</p>
+            <div class="home-copy-action">
+              <div>
+                <h1 id="home-copy-heading" class="home-copy-line home-copy-greeting">こんばんは。</h1>
+                <p class="home-copy-line home-copy-sub">今週のあなたの声を</p>
+                <p class="home-copy-line home-copy-sub">聞かせてください。</p>
+              </div>
+              <svg class="home-copy-pulse" viewBox="0 0 260 32" aria-hidden="true">
+                <polyline points="0,16 16,16 22,16 29,5 36,27 43,16 58,16 64,10 70,22 76,16 102,16 112,16 120,4 128,28 136,16 154,16 162,8 170,24 178,16 206,16 214,16 222,6 230,26 238,16 260,16" />
+              </svg>
+            </div>
           <% else %>
+            <h1 id="home-copy-heading" class="home-copy-line"><%= current_user.name %>さん</h1>
             <p class="home-copy-line home-copy-sub">今週の回答は</p>
             <p class="home-copy-line home-copy-sub">ありません。</p>
           <% end %>
@@ -48,17 +56,7 @@
           <div class="home-ring home-ring-3"></div>
           <div class="home-ring home-ring-2"></div>
           <div class="home-ring home-ring-1"></div>
-          <div class="home-pulse-core">
-            <div class="home-pulse-text">
-              <span class="home-pulse-label">SURVEY</span>
-              <span class="home-pulse-name">START</span>
-              <span class="home-pulse-note">回答をはじめる</span>
-              <span class="home-pulse-arrow" aria-hidden="true">→</span>
-            </div>
-          </div>
-          <div class="home-anonymous-badge" aria-label="完全匿名">
-            <span>完全<br>匿名</span>
-          </div>
+          <div class="home-pulse-core"></div>
         <% end %>
       <% else %>
         <div class="home-pulse-visual home-pulse-static">
@@ -72,9 +70,6 @@
               <span class="home-pulse-name">回答はありません</span>
               <span class="home-pulse-note">次のサーベイまでお待ちください</span>
             </div>
-          </div>
-          <div class="home-anonymous-badge" aria-label="完全匿名">
-            <span>完全<br>匿名</span>
           </div>
         </div>
       <% end %>
@@ -90,6 +85,12 @@
   </main>
 <% else %>
   <main class="home-hero-shell home-hero-shell-login">
+    <div class="home-background-pulse" aria-hidden="true">
+      <svg class="home-background-wave home-background-wave-primary" viewBox="0 0 1200 220" preserveAspectRatio="none">
+        <path d="M0 118 H126 L154 118 L176 78 L204 168 L236 118 H356 L384 118 L408 54 L440 190 L470 118 H602 L628 118 L652 84 L680 148 L706 118 H840 L868 118 L890 66 L920 176 L948 118 H1200" />
+      </svg>
+    </div>
+
     <% flash.each do |type, message| %>
       <div class="flash <%= type %> home-flash" data-controller="flash"><%= message %></div>
     <% end %>
@@ -99,7 +100,7 @@
 
       <div class="home-copy-block">
         <div class="home-copy-inner">
-          <h1 id="login-copy-heading" class="home-copy-line"><%= login_greeting %></h1>
+          <h1 id="login-copy-heading" class="home-copy-line home-copy-greeting"><%= login_greeting %></h1>
           <p class="home-copy-line home-copy-sub">今週の声を</p>
           <p class="home-copy-line home-copy-sub">聞かせてください。</p>
           <div class="home-login-actions">
@@ -130,17 +131,7 @@
         <div class="home-ring home-ring-3"></div>
         <div class="home-ring home-ring-2"></div>
         <div class="home-ring home-ring-1"></div>
-        <div class="home-pulse-core">
-          <div class="home-pulse-text">
-            <span class="home-pulse-label">Pulse Survey</span>
-            <span class="home-pulse-divider"></span>
-            <span class="home-pulse-name">Pulseee</span>
-            <span class="home-pulse-note">小さな声を、チームの力に。</span>
-          </div>
-        </div>
-        <div class="home-anonymous-badge" aria-label="完全匿名">
-          <span>完全<br>匿名</span>
-        </div>
+        <div class="home-pulse-core"></div>
       </div>
     </section>
 
