@@ -12,10 +12,7 @@
     <% end %>
 
     <section class="home-hero-left" aria-labelledby="home-copy-heading">
-      <div class="home-logo-area">
-        <span class="home-logo-sub">Pulse Survey</span>
-        <span class="home-logo-main">Pulseee</span>
-      </div>
+      <%= render "home_logo" %>
 
       <div class="home-copy-block">
         <div class="home-copy-inner">
@@ -98,15 +95,11 @@
     <% end %>
 
     <section class="home-hero-left" aria-labelledby="login-copy-heading">
-      <div class="home-logo-area">
-        <span class="home-logo-sub">Pulse Survey</span>
-        <span class="home-logo-main">Pulseee</span>
-      </div>
+      <%= render "home_logo" %>
 
       <div class="home-copy-block">
         <div class="home-copy-inner">
-          <h1 id="login-copy-heading" class="home-copy-line">Pulseeeへ</h1>
-          <p class="home-copy-line home-copy-sub">ようこそ。</p>
+          <h1 id="login-copy-heading" class="home-copy-line"><%= login_greeting %></h1>
           <p class="home-copy-line home-copy-sub">今週の声を</p>
           <p class="home-copy-line home-copy-sub">聞かせてください。</p>
           <div class="home-login-actions">

@@ -58,6 +58,22 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test "login greeting changes by time of day" do
+    {
+      Time.zone.local(2026, 6, 7, 9, 59) => "おはようございます。",
+      Time.zone.local(2026, 6, 7, 10, 0) => "こんにちは。",
+      Time.zone.local(2026, 6, 7, 16, 59) => "こんにちは。",
+      Time.zone.local(2026, 6, 7, 17, 0) => "こんばんは。"
+    }.each do |current_time, greeting|
+      travel_to current_time do
+        get login_path
+
+        assert_response :success
+        assert_select "#login-copy-heading", text: greeting
+      end
+    end
+  end
+
   test "stale google callback redirects to login" do
     OmniAuth.config.test_mode = false
 
