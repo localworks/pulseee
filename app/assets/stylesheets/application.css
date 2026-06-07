@@ -676,23 +676,32 @@ h3 {
   background: color-mix(in srgb, currentColor 10%, #ffffff);
 }
 
+.question-progress-item.is-answered .question-progress-number::before,
 .question-progress-item.is-answered .question-progress-number::after {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  content: "";
+}
+
+.question-progress-item.is-answered .question-progress-number::before {
+  top: -6px;
+  right: -6px;
   display: grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border: 2px solid var(--canvas);
   border-radius: 9999px;
   background: currentColor;
-  color: var(--canvas);
-  content: "✓";
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
+}
+
+.question-progress-item.is-answered .question-progress-number::after {
+  top: -1px;
+  right: -1px;
+  width: 7px;
+  height: 4px;
+  border-bottom: 2px solid var(--canvas);
+  border-left: 2px solid var(--canvas);
+  transform: rotate(-45deg);
 }
 
 .score-choice-group {
