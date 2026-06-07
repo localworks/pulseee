@@ -28,7 +28,7 @@
               </svg>
             </div>
           <% else %>
-            <h1 id="home-copy-heading" class="home-copy-line"><%= current_user.name %>さん</h1>
+            <h1 id="home-copy-heading" class="home-copy-line home-copy-greeting"><%= current_user.name %>さん</h1>
             <p class="home-copy-line home-copy-sub">今週の回答は</p>
             <p class="home-copy-line home-copy-sub">ありません。</p>
           <% end %>
@@ -63,14 +63,7 @@
           <div class="home-ring home-ring-3"></div>
           <div class="home-ring home-ring-2"></div>
           <div class="home-ring home-ring-1"></div>
-          <div class="home-pulse-core">
-            <div class="home-pulse-text">
-              <span class="home-pulse-label">Status</span>
-              <span class="home-pulse-divider"></span>
-              <span class="home-pulse-name">回答はありません</span>
-              <span class="home-pulse-note">次のサーベイまでお待ちください</span>
-            </div>
-          </div>
+          <div class="home-pulse-core"></div>
         </div>
       <% end %>
     </section>
