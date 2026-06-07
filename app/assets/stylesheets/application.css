@@ -94,6 +94,10 @@ h3 {
   gap: 8px;
 }
 
+.form-actions {
+  justify-content: flex-end;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -123,6 +127,61 @@ h3 {
   background: transparent;
   color: var(--ink);
   border-color: var(--hairline-strong);
+}
+
+.button-back {
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 13px 8px 11px;
+  border-color: rgb(94 55 58 / 16%);
+  background: rgb(255 255 255 / 38%);
+  color: rgb(61 90 61 / 78%);
+  box-shadow: 0 10px 24px rgb(61 90 61 / 6%);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.button-back:hover {
+  border-color: rgb(94 55 58 / 24%);
+  background: rgb(255 255 255 / 68%);
+  color: #1e4a2a;
+  box-shadow: 0 14px 30px rgb(61 90 61 / 9%);
+  transform: translateX(-2px);
+}
+
+.button-submit {
+  min-width: 148px;
+  min-height: 46px;
+  border-color: rgb(138 76 78 / 14%);
+  background:
+    linear-gradient(135deg, #e6a3a1 0%, #d98f91 100%);
+  color: #ffffff;
+  box-shadow:
+    0 16px 34px rgb(138 76 78 / 16%),
+    inset 0 1px 0 rgb(255 255 255 / 24%);
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.button-submit:hover {
+  background:
+    linear-gradient(135deg, #edb0ad 0%, #cf7f84 100%);
+  box-shadow:
+    0 20px 42px rgb(138 76 78 / 21%),
+    inset 0 1px 0 rgb(255 255 255 / 28%);
+  transform: translateY(-1px);
+}
+
+.button-back:focus-visible,
+.button-submit:focus-visible {
+  outline: 3px solid rgb(230 163 161 / 32%);
+  outline-offset: 3px;
 }
 
 .button-ghost {
@@ -855,6 +914,14 @@ h3 {
   .login-panel,
   .response-form {
     padding: 20px;
+  }
+
+  .form-actions {
+    align-items: stretch;
+  }
+
+  .button-submit {
+    width: 100%;
   }
 
   .home-hero-shell {

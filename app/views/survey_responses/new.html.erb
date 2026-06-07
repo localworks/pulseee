@@ -4,7 +4,10 @@
       <p class="eyebrow">Survey</p>
       <h1><%= @assignment.survey.title %></h1>
     </div>
-    <%= link_to "戻る", root_path, class: "button button-secondary" %>
+    <%= link_to root_path, class: "button button-secondary button-back" do %>
+      <span aria-hidden="true">←</span>
+      <span>戻る</span>
+    <% end %>
   </section>
 
   <% flash.each do |type, message| %>
@@ -69,7 +72,7 @@
     <% end %>
 
     <div class="form-actions">
-      <%= submit_tag "送信する", class: "button button-primary" %>
+      <%= submit_tag "送信する", class: "button button-primary button-submit" %>
     </div>
   <% end %>
 </main>
