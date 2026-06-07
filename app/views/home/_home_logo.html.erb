@@ -1,14 +1,19 @@
 <div class="home-logo-area">
   <%= link_to root_path, class: "home-logo-link", aria: { label: "ホームへ戻る" } do %>
-    <svg class="home-logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="320" height="100" role="img" aria-label="Pulseee Pulse Survey">
-      <rect width="320" height="100" fill="#eef5eb" rx="0" />
-      <path d="M0,56 L44,56 L70,24 L88,86 L106,14 L124,86 L144,40 L168,56 L320,56"
-            fill="none" stroke="#2d7a4f" stroke-width="4"
-            stroke-linecap="round" stroke-linejoin="round" opacity="0.18" />
-      <text x="0" y="72" font-family="Georgia,serif" font-size="58"
-            font-weight="700" fill="#1a4d2e" letter-spacing="-1">Pulseee</text>
-      <text x="2" y="92" font-family="sans-serif" font-size="9"
-            fill="#7aab8a" letter-spacing="3">PULSE SURVEY</text>
-    </svg>
+    <div class="home-logo-mark" role="img" aria-label="Pulseee Pulse Survey">
+      <div class="home-logo-word">
+        <span>Puls</span>
+        <svg class="home-logo-pulse" xmlns="http://www.w3.org/2000/svg" width="50" height="60" viewBox="0 0 50 60" aria-hidden="true">
+          <polyline points="0,30 6,30 11,30 16,8 21,52 26,30 31,30 35,17 40,43 45,30 50,30"
+                    stroke="#c07070"
+                    stroke-width="1.4"
+                    fill="none"
+                    stroke-linecap="round"
+                    stroke-linejoin="round" />
+        </svg>
+        <span>eee</span>
+      </div>
+      <div class="home-logo-subtitle">Pulse Survey System</div>
+    </div>
   <% end %>
 </div>
