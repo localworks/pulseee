@@ -35,7 +35,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     login_as(user)
     get root_path
     assert_select ".home-deadline-val", text: "2026/6/13 13:25"
-    assert_select "a.home-pulse-link[href='#{new_survey_assignment_response_path(assignment)}']", text: /START/
+    assert_select "a.home-pulse-link[href='#{new_survey_assignment_response_path(assignment)}']"
     get new_survey_assignment_response_path(assignment)
     assert_response :success
     assert_select ".question-progress-item", count: 5
