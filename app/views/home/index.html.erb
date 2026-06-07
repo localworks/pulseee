@@ -31,7 +31,7 @@
         <% if @assignment %>
           <div class="home-meta">
             <span class="home-meta-key">回答期限</span>
-            <span class="home-meta-val home-deadline-val"><%= @assignment.survey.end_at.strftime("%Y %-m/%-d %H:%M") %></span>
+            <span class="home-meta-val home-deadline-val"><%= @assignment.survey.end_at.strftime("%Y/%-m/%-d %H:%M") %></span>
           </div>
         <% else %>
           <div class="home-meta">
