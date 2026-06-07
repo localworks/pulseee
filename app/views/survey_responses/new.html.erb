@@ -11,8 +11,32 @@
     <div class="flash <%= type %>" data-controller="flash"><%= message %></div>
   <% end %>
 
-  <%= form_with url: survey_assignment_response_path(@assignment), method: :post, class: "response-form" do %>
-    <% @assignment.survey.survey_questions.ordered.each do |question| %>
+  <% questions = @assignment.survey.survey_questions.ordered.to_a %>
+  <% score_options = [
+    [1, "ちがう"],
+    [2, "ややちがう"],
+    [3, "どちらとも言えない"],
+    [4, "まあそうだ"],
+    [5, "そうだ"]
+  ] %>
+
+  <%= form_with url: survey_assignment_response_path(@assignment),
+                method: :post,
+                class: "response-form",
+                data: { controller: "score-choice" } do %>
+    <ol class="question-progress" aria-label="回答状況">
+      <% questions.each do |question| %>
+        <% selected_score = Integer(@answers[question.id.to_s], exception: false) %>
+        <% selected_score = nil unless selected_score&.between?(ScoreAnswer::MIN_SCORE, ScoreAnswer::MAX_SCORE) %>
+        <li class="question-progress-item <%= "is-answered" if selected_score %>"
+            data-score-choice-target="status"
+            data-question-id="<%= question.id %>">
+          <span class="question-progress-number"><%= question.order_index %></span>
+        </li>
+      <% end %>
+    </ol>
+
+    <% questions.each do |question| %>
       <fieldset class="question-block">
         <legend>
           <span>Q<%= question.order_index %></span>
@@ -21,43 +45,25 @@
 
         <% selected_score = Integer(@answers[question.id.to_s], exception: false) %>
         <% selected_score = nil unless selected_score&.between?(ScoreAnswer::MIN_SCORE, ScoreAnswer::MAX_SCORE) %>
-        <% display_score = selected_score || "未選択" %>
-        <% slider_score = selected_score || ScoreAnswer::DEFAULT_SCORE %>
 
-        <div class="score-slider" data-controller="score-slider">
-          <div class="score-value" aria-live="polite">
-            <span>現在の評価</span>
-            <strong data-score-slider-target="value"><%= display_score %></strong>
-          </div>
-
-          <%= hidden_field_tag "answers[#{question.id}]", selected_score, data: { score_slider_target: "input" } %>
-          <%= tag.input type: "range",
-                        id: "score_range_#{question.id}",
-                        class: "score-range",
-                        min: ScoreAnswer::MIN_SCORE,
-                        max: ScoreAnswer::MAX_SCORE,
-                        step: 1,
-                        value: slider_score,
-                        data: {
-                          score_slider_target: "range",
-                          action: "input->score-slider#select change->score-slider#select"
-                        },
-                        aria: { label: "Q#{question.order_index}の評価" } %>
-
-          <div class="score-scale" aria-hidden="true">
-            <% score_steps = ScoreAnswer::MAX_SCORE - ScoreAnswer::MIN_SCORE %>
-            <% (ScoreAnswer::MIN_SCORE..ScoreAnswer::MAX_SCORE).each do |score| %>
-              <% score_ratio = (score - ScoreAnswer::MIN_SCORE).to_f / score_steps %>
-              <% score_percent = score_ratio * 100 %>
-              <% score_offset = 20 * (0.5 - score_ratio) %>
-              <span style="--score-left: calc(<%= score_percent %>% <%= score_offset.negative? ? "-" : "+" %> <%= score_offset.abs %>px)"><%= score %></span>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="score-labels">
-          <span>まったくそう思わない</span>
-          <span>とてもそう思う</span>
+        <div class="score-choice-group">
+          <% score_options.each do |score, label| %>
+            <% input_id = "answer_#{question.id}_#{score}" %>
+            <label class="score-choice <%= "is-selected" if selected_score == score %>" for="<%= input_id %>">
+              <%= radio_button_tag "answers[#{question.id}]",
+                                   score,
+                                   selected_score == score,
+                                   id: input_id,
+                                   class: "score-choice-input",
+                                   required: true,
+                                   data: {
+                                     action: "change->score-choice#select",
+                                     question_id: question.id
+                                   } %>
+              <span class="score-choice-dot" aria-hidden="true"></span>
+              <span><%= label %></span>
+            </label>
+          <% end %>
         </div>
       </fieldset>
     <% end %>
