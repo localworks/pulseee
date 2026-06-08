@@ -16,21 +16,35 @@ Question.ensure_standard_questions!
 InitialAdminProvisioner.call if Rails.env.production? && ENV["SEED_ADMIN_EMAIL"].present?
 
 if Rails.env.development?
-  admin = User.find_or_initialize_by(email: "admin@example.com")
-  admin.update!(name: "管理者サンプル", survey_subject: true)
-  admin.roles = [ roles.fetch("system_admin"), roles.fetch("member") ]
+  dev_group     = Group.find_or_create_by!(name: "開発")
+  mensapo_group = Group.find_or_create_by!(name: "メンサポ")
+  sales_group   = Group.find_or_create_by!(name: "営業")
 
-  local_admin = User.find_or_initialize_by(email: "kim@localworks.jp")
-  local_admin.update!(name: "Kim", survey_subject: true)
-  local_admin.roles = [ roles.fetch("system_admin"), roles.fetch("member") ]
+  users_data = [
+    { email: "admin-dev@example.com",    name: "Dev Admin",    survey_subject: true,  group: dev_group,     role_names: %w[system_admin member] },
+    { email: "dev-1@example.com",        name: "Dev User 1",   survey_subject: true,  group: dev_group,     role_names: %w[member] },
+    { email: "dev-2@example.com",        name: "Dev User 2",   survey_subject: true,  group: dev_group,     role_names: %w[member] },
+    { email: "dev-3@example.com",        name: "Dev User 3",   survey_subject: true,  group: dev_group,     role_names: %w[member] },
+    { email: "dev-4@example.com",        name: "Dev User 4",   survey_subject: true,  group: dev_group,     role_names: %w[member] },
+    { email: "dev-5@example.com",        name: "Dev User 5",   survey_subject: true,  group: dev_group,     role_names: %w[member] },
+    { email: "admin-mensapo@example.com", name: "Mensapo Admin", survey_subject: true, group: mensapo_group, role_names: %w[system_admin member] },
+    { email: "mensapo-1@example.com",    name: "Mensapo User 1", survey_subject: true, group: mensapo_group, role_names: %w[member] },
+    { email: "mensapo-2@example.com",    name: "Mensapo User 2", survey_subject: true, group: mensapo_group, role_names: %w[member] },
+    { email: "mensapo-3@example.com",    name: "Mensapo User 3", survey_subject: true, group: mensapo_group, role_names: %w[member] },
+    { email: "mensapo-4@example.com",    name: "Mensapo User 4", survey_subject: true, group: mensapo_group, role_names: %w[member] },
+    { email: "sales-1@example.com",      name: "Sales User 1", survey_subject: true,  group: sales_group,   role_names: %w[member] },
+    { email: "sales-2@example.com",      name: "Sales User 2", survey_subject: true,  group: sales_group,   role_names: %w[member] },
+    { email: "sales-3@example.com",      name: "Sales User 3", survey_subject: true,  group: sales_group,   role_names: %w[member] },
+    { email: "inactive@example.com",     name: "Inactive User", survey_subject: false, group: nil,          role_names: %w[member] }
+  ]
 
-  member = User.find_or_initialize_by(email: "member@example.com")
-  member.update!(name: "メンバーサンプル", survey_subject: true)
-  member.roles = [ roles.fetch("member") ]
+  users_data.each do |data|
+    user = User.find_or_initialize_by(email: data[:email])
+    user.update!(name: data[:name], survey_subject: data[:survey_subject], group: data[:group])
+    user.roles = data[:role_names].map { |r| roles.fetch(r) }
+  end
 
-  inactive = User.find_or_initialize_by(email: "inactive@example.com")
-  inactive.update!(name: "対象外サンプル", survey_subject: false)
-  inactive.roles = [ roles.fetch("member") ]
+  local_admin = User.find_by!(email: "admin-dev@example.com")
 
   survey = Survey.find_or_initialize_by(title: "MVPサンプルサーベイ")
   survey.update!(
