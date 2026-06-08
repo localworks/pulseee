@@ -6,7 +6,7 @@ class SessionsController < ApplicationController
   def development_login
     return head :not_found unless Rails.env.development?
 
-    user = User.find_by(email: ENV.fetch("DEV_LOGIN_EMAIL", "kim@localworks.jp"))
+    user = User.find_by(email: ENV.fetch("DEV_LOGIN_EMAIL", "admin-dev@example.com"))
 
     if user
       reset_session
