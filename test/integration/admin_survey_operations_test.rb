@@ -17,8 +17,10 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
 
   test "admin sees survey operation page" do
     admin = create_admin
+    User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
 
     travel_to Time.zone.local(2026, 6, 10, 12, 0) do
+      Survey.create!(title: "現在のサーベイ", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
       Surveys::CreateCurrentWeekSurvey.call
       login_as(admin)
 
@@ -27,6 +29,8 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select "h1", text: "サーベイ運用"
       assert_select ".admin-operation-value", text: "2026-06-11"
+      assert_select ".admin-operation-value", text: "現在のサーベイ"
+      assert_select ".admin-operation-value", text: "1名"
     end
   end
 
@@ -61,6 +65,34 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_survey_operation_path
   end
 
+  test "admin can enqueue unanswered notification job when slack is configured" do
+    admin = create_admin
+    survey = Survey.create!(title: "今週", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    login_as(admin)
+
+    with_slack_webhook("https://example.com/slack-webhook") do
+      assert_enqueued_with(job: SurveyUnansweredNotificationJob, args: [ survey.id ]) do
+        post notify_unanswered_users_admin_survey_operation_path
+      end
+    end
+
+    assert_redirected_to admin_survey_operation_path
+  end
+
+  test "notification job is not enqueued without slack configuration" do
+    admin = create_admin
+    Survey.create!(title: "今週", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    login_as(admin)
+
+    with_slack_webhook(nil) do
+      assert_no_enqueued_jobs do
+        post notify_unanswered_users_admin_survey_operation_path
+      end
+    end
+
+    assert_redirected_to admin_survey_operation_path
+  end
+
   private
 
   def create_admin
@@ -78,5 +110,13 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     )
     post "/auth/google_oauth2"
     follow_redirect! while response.redirect?
+  end
+
+  def with_slack_webhook(value)
+    previous = ENV["SLACK_SURVEY_WEBHOOK_URL"]
+    ENV["SLACK_SURVEY_WEBHOOK_URL"] = value
+    yield
+  ensure
+    ENV["SLACK_SURVEY_WEBHOOK_URL"] = previous
   end
 end
