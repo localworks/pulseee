@@ -5,7 +5,6 @@ require "uri"
 module Slack
   class SurveyUnansweredNotifier
     WEBHOOK_ENV_KEY = "SLACK_SURVEY_WEBHOOK_URL"
-    DISPLAY_LIMIT = 30
 
     class ConfigurationError < StandardError; end
     class DeliveryError < StandardError; end
@@ -63,19 +62,13 @@ module Slack
     end
 
     def message_text
-      lines = [
-        "*#{survey.title}*",
-        "未回答者: #{users.size}名"
-      ]
+      return "未回答者はいません。" if users.empty?
 
-      return (lines + [ "未回答者はいません。" ]).join("\n") if users.empty?
-
-      displayed_users = users.first(DISPLAY_LIMIT)
-      user_lines = displayed_users.map { |user| "- #{user.name}（#{user.email}）" }
-      remaining_count = users.size - displayed_users.size
-      user_lines << "- ほか#{remaining_count}名" if remaining_count.positive?
-
-      (lines + user_lines).join("\n")
+      [
+        users.map { |user| "<@#{user.slack_user_id}>" }.join(" "),
+        "今週のサーベイへの回答がまだ完了していません。",
+        "回答をお願いします。"
+      ].join("\n")
     end
   end
 end

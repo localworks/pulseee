@@ -8,8 +8,8 @@ class Slack::SurveyUnansweredNotifierTest < ActiveSupport::TestCase
   test "posts unanswered users to configured webhook" do
     survey = Survey.create!(title: "通知テスト", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     users = [
-      User.create!(name: "未回答A", email: "first@example.com", survey_subject: true),
-      User.create!(name: "未回答B", email: "second@example.com", survey_subject: true)
+      User.create!(name: "未回答A", email: "first@example.com", slack_user_id: "U12345678", survey_subject: true),
+      User.create!(name: "未回答B", email: "second@example.com", slack_user_id: "U23456789", survey_subject: true)
     ]
     http_client = FakeHttpClient.success
 
@@ -26,9 +26,11 @@ class Slack::SurveyUnansweredNotifierTest < ActiveSupport::TestCase
     assert_equal "https://example.com/slack-webhook", uri.to_s
     assert_equal "application/json", headers.fetch("Content-Type")
     assert_equal "サーベイ未回答者: 2名", payload.fetch("text")
-    assert_includes payload.dig("blocks", 0, "text", "text"), "*通知テスト*"
-    assert_includes payload.dig("blocks", 0, "text", "text"), "- 未回答A（first@example.com）"
-    assert_includes payload.dig("blocks", 0, "text", "text"), "- 未回答B（second@example.com）"
+    assert_equal <<~TEXT.chomp, payload.dig("blocks", 0, "text", "text")
+      <@U12345678> <@U23456789>
+      今週のサーベイへの回答がまだ完了していません。
+      回答をお願いします。
+    TEXT
   end
 
   test "raises when webhook is not configured" do
