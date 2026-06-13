@@ -1,5 +1,9 @@
 Rails.application.routes.draw do
   namespace :admin do
+    resource :survey_operation, only: :show do
+      post :create_current_week_survey
+    end
+
     resources :surveys, only: [] do
       resource :results, only: :show, controller: "survey_results", defaults: { format: :csv }
     end
