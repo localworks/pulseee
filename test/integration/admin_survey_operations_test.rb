@@ -54,29 +54,41 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert", text: "管理者権限が必要です"
   end
 
-  test "admin can enqueue current week survey creation job" do
+  test "admin can create current week survey from operation page" do
     admin = create_admin
     login_as(admin)
 
-    assert_enqueued_with(job: SurveyCreationJob) do
-      post create_current_week_survey_admin_survey_operation_path
+    travel_to Time.zone.local(2026, 6, 10, 12, 0) do
+      assert_difference("Survey.count", 1) do
+        assert_no_enqueued_jobs do
+          post create_current_week_survey_admin_survey_operation_path
+        end
+      end
     end
 
     assert_redirected_to admin_survey_operation_path
   end
 
-  test "admin can enqueue unanswered notification job when slack is configured" do
+  test "admin can send unanswered notification when slack is configured" do
     admin = create_admin
     survey = Survey.create!(title: "今週", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     login_as(admin)
+    notified_survey_id = nil
 
     with_slack_webhook("https://example.com/slack-webhook") do
-      assert_enqueued_with(job: SurveyUnansweredNotificationJob, args: [ survey.id ]) do
-        post notify_unanswered_users_admin_survey_operation_path
+      with_stubbed_unanswered_notifier(->(survey:, users:) {
+        notified_survey_id = survey.id
+        users.to_a
+        true
+      }) do
+        assert_no_enqueued_jobs do
+          post notify_unanswered_users_admin_survey_operation_path
+        end
       end
     end
 
     assert_redirected_to admin_survey_operation_path
+    assert_equal survey.id, notified_survey_id
   end
 
   test "notification job is not enqueued without slack configuration" do
@@ -118,5 +130,17 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     yield
   ensure
     ENV["SLACK_SURVEY_WEBHOOK_URL"] = previous
+  end
+
+  def with_stubbed_unanswered_notifier(callable)
+    original_call = Slack::SurveyUnansweredNotifier.method(:call)
+    Slack::SurveyUnansweredNotifier.define_singleton_method(:call) do |survey:, users:|
+      callable.call(survey: survey, users: users)
+    end
+    yield
+  ensure
+    Slack::SurveyUnansweredNotifier.define_singleton_method(:call) do |**kwargs|
+      original_call.call(**kwargs)
+    end
   end
 end

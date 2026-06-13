@@ -10,9 +10,9 @@ class Admin::SurveyOperationsController < ApplicationController
   end
 
   def create_current_week_survey
-    SurveyCreationJob.perform_later
+    SurveyCreationJob.perform_now
 
-    redirect_to admin_survey_operation_path, notice: "今週分サーベイ作成ジョブを登録しました"
+    redirect_to admin_survey_operation_path, notice: "今週分サーベイを作成しました"
   end
 
   def notify_unanswered_users
@@ -27,9 +27,9 @@ class Admin::SurveyOperationsController < ApplicationController
       return
     end
 
-    SurveyUnansweredNotificationJob.perform_later(survey.id)
+    SurveyUnansweredNotificationJob.perform_now(survey.id)
 
-    redirect_to admin_survey_operation_path, notice: "未回答者のSlack通知ジョブを登録しました"
+    redirect_to admin_survey_operation_path, notice: "未回答者のSlack通知を送信しました"
   end
 
   private
