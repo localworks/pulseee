@@ -67,6 +67,27 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to admin_survey_operation_path
+    follow_redirect!
+    assert_select ".flash.notice", text: "今週分サーベイを作成しました"
+  end
+
+  test "admin sees already created notice when current week survey exists" do
+    admin = create_admin
+    login_as(admin)
+
+    travel_to Time.zone.local(2026, 6, 10, 12, 0) do
+      Surveys::CreateCurrentWeekSurvey.call
+
+      assert_no_difference("Survey.count") do
+        assert_no_enqueued_jobs do
+          post create_current_week_survey_admin_survey_operation_path
+        end
+      end
+    end
+
+    assert_redirected_to admin_survey_operation_path
+    follow_redirect!
+    assert_select ".flash.notice", text: "今週分サーベイはすでに作成済みです"
   end
 
   test "admin can send unanswered notification when slack is configured" do

@@ -10,9 +10,12 @@ class Admin::SurveyOperationsController < ApplicationController
   end
 
   def create_current_week_survey
+    already_created = Surveys::CreateCurrentWeekSurvey.current_survey.present?
+
     SurveyCreationJob.perform_now
 
-    redirect_to admin_survey_operation_path, notice: "今週分サーベイを作成しました"
+    notice = already_created ? "今週分サーベイはすでに作成済みです" : "今週分サーベイを作成しました"
+    redirect_to admin_survey_operation_path, notice: notice
   end
 
   def notify_unanswered_users
