@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   namespace :admin do
     resource :survey_operation, only: :show do
       post :create_current_week_survey
+      post :notify_unanswered_users
     end
 
     resources :surveys, only: [] do

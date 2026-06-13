@@ -294,6 +294,12 @@ h3 {
   flex: 0 0 auto;
 }
 
+.admin-operation-actions .button:disabled {
+  background: var(--hairline);
+  color: var(--steel);
+  cursor: not-allowed;
+}
+
 @media (max-width: 760px) {
   .admin-operation-status {
     grid-template-columns: 1fr;
