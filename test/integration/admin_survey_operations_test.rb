@@ -30,6 +30,16 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "admin can navigate to survey operation from rails admin dashboard" do
+    admin = create_admin
+    login_as(admin)
+
+    get rails_admin_path
+
+    assert_response :success
+    assert_select "a[href='/admin/survey_operation']", text: "サーベイ運用を開く"
+  end
+
   test "non admins cannot access survey operation page" do
     member = User.create!(name: "一般", email: "member@example.com")
     login_as(member)
