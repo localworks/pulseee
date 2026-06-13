@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_08_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_13_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -105,10 +105,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_08_000003) do
     t.string "email", null: false
     t.bigint "group_id"
     t.string "name", null: false
+    t.string "slack_user_id"
     t.boolean "survey_subject", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["group_id"], name: "index_users_on_group_id"
+    t.index ["slack_user_id"], name: "index_users_on_slack_user_id", unique: true, where: "(slack_user_id IS NOT NULL)"
   end
 
   add_foreign_key "score_answers", "survey_questions"
