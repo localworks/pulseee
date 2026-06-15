@@ -1,5 +1,4 @@
 require "test_helper"
-require "fugit"
 require "yaml"
 
 class ApplicationConfigurationTest < ActiveSupport::TestCase
@@ -7,12 +6,9 @@ class ApplicationConfigurationTest < ActiveSupport::TestCase
     assert_equal "Tokyo", Time.zone.name
   end
 
-  test "schedules unanswered survey notification every Thursday at 18:00" do
+  test "does not schedule unanswered survey notification in app recurring jobs" do
     recurring_config = YAML.load_file(Rails.root.join("config/recurring.yml"))
-    schedule = recurring_config.dig("production", "survey_unanswered_notification")
 
-    assert_equal "SurveyUnansweredNotificationJob", schedule.fetch("class")
-    assert_equal "default", schedule.fetch("queue")
-    assert_equal "0 18 * * 4", Fugit.parse(schedule.fetch("schedule")).original
+    assert_nil recurring_config.dig("production", "survey_unanswered_notification")
   end
 end
