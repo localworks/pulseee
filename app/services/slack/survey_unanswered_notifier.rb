@@ -67,7 +67,8 @@ module Slack
       [
         users.map { |user| "<@#{user.slack_user_id}>" }.join(" "),
         "今週のサーベイへの回答がまだ完了していません。",
-        "回答をお願いします。"
+        "回答をお願いします。",
+        "https://pulseee-oknn.onrender.com/"
       ].join("\n")
     end
   end
