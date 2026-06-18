@@ -30,6 +30,7 @@ class Slack::SurveyUnansweredNotifierTest < ActiveSupport::TestCase
       <@U12345678> <@U23456789>
       今週のサーベイへの回答がまだ完了していません。
       回答をお願いします。
+      https://pulseee-oknn.onrender.com/
     TEXT
   end
 
