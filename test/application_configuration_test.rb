@@ -7,12 +7,34 @@ class ApplicationConfigurationTest < ActiveSupport::TestCase
     assert_equal "Tokyo", Time.zone.name
   end
 
-  test "schedules unanswered survey notification every Thursday at 18:00" do
+  test "schedules weekly survey operation cycle" do
     recurring_config = YAML.load_file(Rails.root.join("config/recurring.yml"))
-    schedule = recurring_config.dig("production", "survey_unanswered_notification")
 
-    assert_equal "SurveyUnansweredNotificationJob", schedule.fetch("class")
+    assert_recurring_job recurring_config,
+                         "survey_creation",
+                         "SurveyCreationJob",
+                         "0 9 * * 4"
+    assert_recurring_job recurring_config,
+                         "survey_unanswered_notification_thursday",
+                         "SurveyUnansweredNotificationJob",
+                         "0 18 * * 4"
+    assert_recurring_job recurring_config,
+                         "survey_unanswered_notification_friday",
+                         "SurveyUnansweredNotificationJob",
+                         "0 12 * * 5"
+    assert_recurring_job recurring_config,
+                         "survey_weekly_aggregation",
+                         "SurveyWeeklyAggregationJob",
+                         "0 9 * * 1"
+  end
+
+  private
+
+  def assert_recurring_job(config, key, job_class, cron)
+    schedule = config.dig("production", key)
+
+    assert_equal job_class, schedule.fetch("class")
     assert_equal "default", schedule.fetch("queue")
-    assert_equal "0 18 * * 4", Fugit.parse(schedule.fetch("schedule")).original
+    assert_equal cron, Fugit.parse(schedule.fetch("schedule")).original
   end
 end

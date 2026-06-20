@@ -10,10 +10,22 @@
 #     schedule: at 5am every day
 
 production:
-  survey_unanswered_notification:
+  survey_creation:
+    class: SurveyCreationJob
+    queue: default
+    schedule: every week on thursday at 9am
+  survey_unanswered_notification_thursday:
     class: SurveyUnansweredNotificationJob
     queue: default
     schedule: every week on thursday at 6pm
+  survey_unanswered_notification_friday:
+    class: SurveyUnansweredNotificationJob
+    queue: default
+    schedule: every week on friday at 12pm
+  survey_weekly_aggregation:
+    class: SurveyWeeklyAggregationJob
+    queue: default
+    schedule: every week on monday at 9am
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
