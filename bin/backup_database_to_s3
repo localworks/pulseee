@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+required_envs=(
+  "DATABASE_URL"
+  "S3_BACKUP_BUCKET"
+  "AWS_ACCESS_KEY_ID"
+  "AWS_SECRET_ACCESS_KEY"
+  "AWS_REGION"
+)
+
+for env_name in "${required_envs[@]}"; do
+  if [[ -z "${!env_name:-}" ]]; then
+    echo "Missing required environment variable: ${env_name}" >&2
+    exit 1
+  fi
+done
+
+for command_name in pg_dump gzip aws; do
+  if ! command -v "${command_name}" >/dev/null 2>&1; then
+    echo "Missing required command: ${command_name}" >&2
+    exit 1
+  fi
+done
+
 timestamp="$(TZ=Asia/Tokyo date +"%Y%m%d-%H%M%S")"
 backup_filename="pulseee-production-${timestamp}.sql.gz"
 backup_file="/tmp/${backup_filename}"
