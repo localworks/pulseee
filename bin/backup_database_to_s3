@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+timestamp="$(TZ=Asia/Tokyo date +"%Y%m%d-%H%M%S")"
+backup_filename="pulseee-production-${timestamp}.sql.gz"
+backup_file="/tmp/${backup_filename}"
+
+cleanup() {
+  rm -f "${backup_file}"
+}
+trap cleanup EXIT
+
+echo "Starting database backup: ${backup_filename}"
+
+pg_dump "${DATABASE_URL}" --no-owner --no-acl | gzip > "${backup_file}"
+
+echo "Database backup created: ${backup_file}"
