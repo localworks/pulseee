@@ -41,12 +41,12 @@ Pulseeeの本番データを、誤操作・障害・デプロイ不具合・デ�
 
 初期運用では以下を目安とする。
 
-| 項目 | 目標 |
-| --- | --- |
-| RPO | 最大24時間以内のデータ損失に抑える |
-| RTO | 2時間以内に復旧方針を判断し、半日以内に復旧する |
-| 保存期間 | Neonのrestore windowに加え、S3の日次バックアップを30日保持する |
-| 復旧担当 | 尾上さん、またはNeon/Renderにアクセスできる管理者 |
+| 項目     | 目標                                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| RPO      | S3日次バックアップにより最大24時間以内のデータ損失に抑える。直近6時間以内の事故はNeonのPoint-in-Time Restoreで短縮できる可能性がある |
+| RTO      | 2時間以内に復旧方針を判断し、半日以内に復旧する                                                                                      |
+| 保存期間 | S3の日次バックアップを30日保持する。Neonのrestore windowは短期復旧の補助として扱う                                                   |
+| 復旧担当 | Neon/Renderにアクセスできる管理者                                                                                                    |
 
 RPO/RTOは運用開始後、実際の重要度に合わせて見直す。
 
@@ -54,23 +54,20 @@ RPO/RTOは運用開始後、実際の重要度に合わせて見直す。
 
 ### 基本方針
 
-Neonの標準機能を主系統のバックアップとする。
+S3日次バックアップを主系統のバックアップとする。
+Neon Freeプランのrestore windowは6時間に限られるため、NeonのPoint-in-Time Restoreは短期復旧の補助手段として扱う。
 
-- NeonのPoint-in-Time Restoreを使い、restore window内の任意時点へ戻せる状態にする。
-- Neonのスナップショット機能を使い、週次または重要作業前の復元点を明示的に残す。
+- S3日次バックアップを復旧設計の主系統とする。
+- 6時間以内の誤操作や障害では、NeonのPoint-in-Time Restoreも復旧候補にする。
+- 6時間を超えてから発見した事故、Neon側の障害、アカウント操作ミス、ブランチ操作ミスでは、S3バックアップから復元する。
+- 重要作業前は、必要に応じてRender Cronを手動実行し、S3へ追加バックアップを取得する。
 - 本番DBを直接上書きする前に、復元先のブランチまたは一時DBで内容を確認する。
-
-### 初期推奨設定（Neon Freeプラン）
-
-- restore window: Freeプランの上限である6時間とする。
-- スナップショット: Freeプランでは手動スナップショットを最大1個作成できるため、マイグレーション、データ修正、運用変更の直前に作成する。
-- 保持期間: Freeプランでは週次スナップショットを4週間保持できない。
-- 週次バックアップや4週間保持が必要になった場合は、Neonの有料プランに上げるか、`pg_dump` による外部バックアップを追加する。
 
 ### 外部バックアップ
 
 Neon Freeプランのrestore windowは6時間のため、日次バックアップをS3へ保存する。
-S3バックアップは、Neon側の短い復元可能期間を補うための外部バックアップとする。
+S3バックアップは、Neon側の短い復元可能期間を補う主系統のバックアップとする。
+復旧判断では、まずS3バックアップの有無と最新時刻を確認し、直近6時間以内の事故であればNeonのPoint-in-Time Restoreも候補に入れる。
 
 ### S3日次バックアップ
 
@@ -107,14 +104,14 @@ pulseee/production/db/daily
 
 必要な環境変数:
 
-| 変数名 | 用途 |
-| --- | --- |
-| `DATABASE_URL` | Neon DBへの接続URL |
-| `S3_BACKUP_BUCKET` | バックアップ保存先S3バケット |
-| `S3_BACKUP_PREFIX` | 保存prefix。未設定時は `pulseee/production/db/daily` |
-| `AWS_ACCESS_KEY_ID` | S3アップロード用IAMユーザーのアクセスキー |
-| `AWS_SECRET_ACCESS_KEY` | S3アップロード用IAMユーザーのシークレット |
-| `AWS_REGION` | S3バケットのリージョン |
+| 変数名                  | 用途                                                 |
+| ----------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`          | Neon DBへの接続URL                                   |
+| `S3_BACKUP_BUCKET`      | バックアップ保存先S3バケット                         |
+| `S3_BACKUP_PREFIX`      | 保存prefix。未設定時は `pulseee/production/db/daily` |
+| `AWS_ACCESS_KEY_ID`     | S3アップロード用IAMユーザーのアクセスキー            |
+| `AWS_SECRET_ACCESS_KEY` | S3アップロード用IAMユーザーのシークレット            |
+| `AWS_REGION`            | S3バケットのリージョン                               |
 
 S3の保持期間は、S3 Lifecycle Ruleで管理する。
 初期設定では日次バックアップを30日保持する。
@@ -127,7 +124,7 @@ s3://<S3_BACKUP_BUCKET>/pulseee/production/db/daily/*
 
 `S3_BACKUP_PREFIX` を変更する場合は、IAM権限の対象prefixも合わせて変更する。
 
-### 外部バックアップを見直す条件
+### S3バックアップを見直す条件
 
 以下のいずれかに当てはまる場合は、S3バックアップの頻度・保持期間・保存先を見直す。
 
@@ -143,10 +140,9 @@ s3://<S3_BACKUP_BUCKET>/pulseee/production/db/daily/*
 
 Render CronはUTCでスケジュールを設定する。
 
-| 用途 | 日本時間 | Render Cron |
-| --- | --- | --- |
-| 月曜朝の集計 | 月曜 9:00 | `0 0 * * 1` |
-| 金曜昼のリマインド | 金曜 12:00 | `0 3 * * 5` |
+| 用途                 | 日本時間   | Render Cron |
+| -------------------- | ---------- | ----------- |
+| 月曜朝の集計         | 月曜 9:00  | `0 0 * * 1` |
 | 木曜夕方のリマインド | 木曜 18:00 | `0 9 * * 4` |
 
 ## リストア方針
@@ -193,10 +189,10 @@ NeonのBackup & restore画面で、選択した時点のデータをプレビュ
 確認例:
 
 ```sql
-select count(*) from users;
-select count(*) from surveys;
-select count(*) from survey_assignments;
-select count(*) from score_answers;
+select count(*) from public.users;
+select count(*) from public.surveys;
+select count(*) from public.survey_assignments;
+select count(*) from public.score_answers;
 ```
 
 必要に応じて、壊れたと疑われるテーブルを個別に確認する。
@@ -234,10 +230,18 @@ gunzip -c /tmp/pulseee-restore.sql.gz | psql "$RESTORE_DATABASE_URL"
 復元後、最低限以下を確認する。
 
 ```sql
-select count(*) from users;
-select count(*) from surveys;
-select count(*) from survey_assignments;
-select count(*) from score_answers;
+select count(*) from public.users;
+select count(*) from public.surveys;
+select count(*) from public.survey_assignments;
+select count(*) from public.score_answers;
+```
+
+`search_path` が空の場合、`\dt` ではテーブルが表示されないことがある。
+その場合は `public.テーブル名` を指定して確認するか、以下を実行してから確認する。
+
+```sql
+set search_path to public;
+\dt
 ```
 
 ### 5. 本番復旧を実行する
@@ -270,27 +274,43 @@ select count(*) from score_answers;
 
 ### 訓練内容
 
-1. 復旧対象のサーベイを1つ決める。
-2. Neonで過去時点またはスナップショットから復元用ブランチを作る。
-3. 一時的な接続先でRailsからDB接続できるか確認する。
-4. 管理画面・CSV・件数チェックを実施する。
-5. 所要時間、詰まった箇所、改善点を記録する。
+1. 復元元のS3バックアップファイルを1つ決める。
+2. Neonで検証用ブランチ、または一時DBを作る。
+3. S3バックアップを検証用DBへ復元する。
+4. 一時的な接続先でRailsからDB接続できるか確認する。
+5. 管理画面・CSV・件数チェックを実施する。
+6. 所要時間、詰まった箇所、改善点を記録する。
 
 ### 訓練ログ
 
 以下を記録する。
 
-| 項目 | 内容 |
-| --- | --- |
-| 実施日 |  |
-| 実施者 |  |
-| 対象DB/ブランチ |  |
-| 復元元時刻/スナップショット |  |
-| 復元先 |  |
-| RTO実績 |  |
-| 確認した画面・データ |  |
-| 問題点 |  |
-| 次回改善 |  |
+| 項目                        | 内容 |
+| --------------------------- | ---- |
+| 実施日                      |      |
+| 実施者                      |      |
+| 対象DB/ブランチ             |      |
+| 復元元時刻/スナップショット |      |
+| 復元先                      |      |
+| RTO実績                     |      |
+| 確認した画面・データ        |      |
+| 問題点                      |      |
+| 次回改善                    |      |
+
+### 訓練ログ: 2026-06-27
+
+| 項目                 | 内容                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 実施日               | 2026-06-27                                                                                                 |
+| 実施者               | 金                                                                                                         |
+| 対象DB/ブランチ      | Neon検証用ブランチ `restore-drill-20260627`                                                                |
+| 復元元S3ファイル     | `s3://pulseee-production/pulseee/production/db/daily/pulseee-production-20260627-151635.sql.gz`            |
+| 復元先               | Neon検証用ブランチ `restore-drill-20260627`                                                                |
+| RTO実績              | 未計測                                                                                                     |
+| 確認した画面・データ | `users`: 15件、`surveys`: 8件、`survey_assignments`: 76件、`score_answers`: 190件                          |
+| 問題点               | `search_path` が空だったため `\dt` ではテーブルが見えなかった。`public.テーブル名` で確認した。            |
+| 結果                 | S3バックアップから検証用DBへの復元に成功                                                                   |
+| 次回改善             | 復元後確認手順では `public.テーブル名` を指定するか、`set search_path to public;` を実行してから確認する。 |
 
 ## 未決事項
 
