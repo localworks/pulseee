@@ -308,9 +308,10 @@ set search_path to public;
 | 復元先               | Neon検証用ブランチ `restore-drill-20260627`                                                                |
 | RTO実績              | 未計測                                                                                                     |
 | 確認した画面・データ | `users`: 15件、`surveys`: 8件、`survey_assignments`: 76件、`score_answers`: 190件                          |
+| 開発環境での動作確認 | 復元DBを `DATABASE_URL` に指定してRailsをdevelopment環境で起動。トップページ、開発用ログイン、ログイン後トップ、Rails Admin、サーベイ運用画面がHTTP 200で応答することを確認した。 |
 | 問題点               | `search_path` が空だったため `\dt` ではテーブルが見えなかった。`public.テーブル名` で確認した。            |
 | 結果                 | S3バックアップから検証用DBへの復元に成功                                                                   |
-| 次回改善             | 復元後確認手順では `public.テーブル名` を指定するか、`set search_path to public;` を実行してから確認する。 |
+| 次回改善             | 復元後確認手順では `public.テーブル名` を指定するか、`set search_path to public;` を実行してから確認する。復旧訓練では、DB件数確認に加えて復元DBを使ったRails起動・ログイン・管理画面確認まで実施する。 |
 
 ## 未決事項
 
