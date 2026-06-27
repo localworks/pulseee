@@ -67,6 +67,7 @@ module Slack
       [
         "以下の方は今週のサーベイ回答が完了していません。",
         "本日 24:00 までに回答をしてください。",
+        "https://pulseee-oknn.onrender.com/",
         "",
         users.map { |user| "- <@#{user.slack_user_id}>" }.join("\n"),
         "",
