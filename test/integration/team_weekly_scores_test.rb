@@ -28,6 +28,8 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     assert_select ".team-score-line-chart svg"
     assert_select ".team-score-mini-chart svg", minimum: 2
     assert_select ".team-score-question-fill"
+    assert_select ".team-score-question-legend dt", text: "Q1"
+    assert_select ".team-score-group-header span", text: "累計 1 件の回答"
     assert_select "td strong", text: "4.20"
     assert_select "td strong", text: "3.40"
   end
@@ -43,7 +45,7 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_match(/Jun 08.*Jun 01/m, response.body)
+    assert_match(%r{6/8.*6/1}m, response.body)
   end
 
   test "system admin can navigate from home" do

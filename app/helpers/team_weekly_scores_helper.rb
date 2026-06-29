@@ -98,6 +98,10 @@ module TeamWeeklyScoresHelper
     "#{delta.positive? ? '+' : ''}#{number_with_precision(delta, precision: 2)}"
   end
 
+  def score_date_label(date)
+    "#{date.month}/#{date.day}"
+  end
+
   private
 
   def mini_x(index, count)
