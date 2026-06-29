@@ -28,8 +28,8 @@ module Surveys
         TeamWeeklyScore.upsert(
           {
             survey_id: survey.id,
-            week_start_on: week_range.begin.to_date,
-            week_end_on: week_range.end.to_date,
+            week_start_on: survey.start_at.to_date,
+            week_end_on: survey.end_at.to_date,
             group_name: rows.first.fetch("group_name").presence || UNKNOWN_GROUP_NAME,
             overall_average: average(rows.map { |row| row.fetch("score") }),
             response_count: response_count,
@@ -71,16 +71,8 @@ module Surveys
     def surveys
       Survey
         .active
-        .where(end_at: week_range)
+        .where("end_at <= ?", now)
         .where("exists (select 1 from survey_questions where survey_questions.survey_id = surveys.id)")
-    end
-
-    def week_range
-      @week_range ||= begin
-        start_time = now.in_time_zone.beginning_of_week - 1.week
-        end_time = start_time.end_of_week
-        start_time..end_time
-      end
     end
 
     def question_averages(rows)
