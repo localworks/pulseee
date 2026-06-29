@@ -42,25 +42,29 @@
         <div class="team-score-chart-copy">
           <p class="team-score-kicker">Overall Trend</p>
           <h2 id="team-score-overall-chart-heading">全チーム平均の推移</h2>
-          <p>1.0〜5.0の固定スケールで、週ごとの全体傾向を表示しています。</p>
+          <p>スコア1〜5の縦軸で、週ごとの全体傾向を表示しています。</p>
         </div>
         <div class="team-score-line-chart" role="img" aria-label="全チーム平均の折れ線グラフ">
-          <svg viewBox="0 0 640 220" preserveAspectRatio="none" aria-hidden="true">
-            <line x1="28" y1="18" x2="28" y2="202" class="team-score-chart-axis" />
-            <line x1="28" y1="202" x2="612" y2="202" class="team-score-chart-axis" />
-            <line x1="28" y1="64" x2="612" y2="64" class="team-score-chart-grid" />
-            <line x1="28" y1="110" x2="612" y2="110" class="team-score-chart-grid" />
-            <line x1="28" y1="156" x2="612" y2="156" class="team-score-chart-grid" />
-            <polyline points="<%= score_chart_points(@overall_points) %>" class="team-score-chart-line" />
-            <% score_chart_point_positions(@overall_points).each do |point| %>
-              <circle cx="<%= point.fetch(:x) %>" cy="<%= point.fetch(:y) %>" r="5" class="team-score-chart-dot" />
+          <svg viewBox="0 0 800 300" aria-hidden="true">
+            <%# Y軸グリッド・ラベル（1〜5） %>
+            <% overall_chart_y_axis.each do |item| %>
+              <line x1="52" y1="<%= item[:y] %>" x2="784" y2="<%= item[:y] %>"
+                    class="<%= item[:score] == 1 ? 'team-score-chart-axis' : 'team-score-chart-grid' %>" />
+              <text x="44" y="<%= item[:y] + 4 %>" class="team-score-chart-label-y"><%= item[:score] %></text>
+            <% end %>
+            <%# Y軸縦線 %>
+            <line x1="52" y1="18" x2="52" y2="252" class="team-score-chart-axis" />
+            <%# データ折れ線と点 %>
+            <% overall_pts = overall_chart_points(@overall_points) %>
+            <polyline points="<%= overall_pts.map { |p| "#{p[:x]},#{p[:y]}" }.join(' ') %>" class="team-score-chart-line" />
+            <% overall_pts.each do |point| %>
+              <circle cx="<%= point[:x] %>" cy="<%= point[:y] %>" r="5" class="team-score-chart-dot" />
+            <% end %>
+            <%# X軸ラベル（多い場合は自動間引き） %>
+            <% overall_chart_x_labels(@overall_points).each do |item| %>
+              <text x="<%= item[:x] %>" y="278" class="team-score-chart-label-x"><%= item[:label] %></text>
             <% end %>
           </svg>
-          <div class="team-score-chart-labels">
-            <% @overall_points.each do |point| %>
-              <span><%= point.fetch(:label) %></span>
-            <% end %>
-          </div>
         </div>
       </section>
 

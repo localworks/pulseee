@@ -49,7 +49,7 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "a[href='#{admin_team_weekly_scores_path}']", text: "スコア推移"
+    assert_select "a[href='#{admin_team_weekly_scores_path}']", text: "チームスコア"
   end
 
   test "member cannot view team weekly scores" do
