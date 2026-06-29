@@ -13,11 +13,13 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
 
   test "manager can view all team weekly scores" do
     manager = create_user_with_role("manager")
-    create_weekly_score(group_name: "開発", overall_average: 4.2)
-    create_weekly_score(group_name: "営業", overall_average: 3.4)
+    create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: Date.new(2026, 6, 8))
+    create_survey_with_responses(group_name: "営業", scores: [ 4, 4, 3, 3, 3 ], week_start_on: Date.new(2026, 6, 8))
 
     login_as(manager)
-    get admin_team_weekly_scores_path
+    travel_to Time.zone.local(2026, 6, 20) do
+      get admin_team_weekly_scores_path
+    end
 
     assert_response :success
     assert_select "h1", text: "チーム別スコア推移"
@@ -32,11 +34,13 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
 
   test "weekly score details are ordered newest first" do
     manager = create_user_with_role("manager")
-    create_weekly_score(group_name: "開発", overall_average: 3.6, week_start_on: Date.new(2026, 6, 1))
-    create_weekly_score(group_name: "開発", overall_average: 4.2, week_start_on: Date.new(2026, 6, 8))
+    create_survey_with_responses(group_name: "開発", scores: [ 4, 4, 3, 3, 3 ], week_start_on: Date.new(2026, 6, 1))
+    create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: Date.new(2026, 6, 8))
 
     login_as(manager)
-    get admin_team_weekly_scores_path
+    travel_to Time.zone.local(2026, 6, 20) do
+      get admin_team_weekly_scores_path
+    end
 
     assert_response :success
     assert_match(/Jun 08.*Jun 01/m, response.body)
@@ -71,29 +75,26 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def create_weekly_score(group_name:, overall_average:, week_start_on: Date.new(2026, 6, 8))
+  def create_survey_with_responses(group_name:, scores:, week_start_on:)
+    group = Group.find_or_create_by!(name: group_name)
+    user = User.find_or_create_by!(email: "#{group_name}-respondent@example.com") do |u|
+      u.name = "#{group_name}回答者"
+      u.survey_subject = true
+      u.group = group
+    end
+
+    end_date = (week_start_on + 4.days).in_time_zone
     survey = Survey.create!(
       title: "#{group_name}サーベイ #{week_start_on}",
       status: :active,
       start_at: week_start_on.in_time_zone,
-      end_at: (week_start_on + 4.days).in_time_zone
+      end_at: end_date
     )
 
-    TeamWeeklyScore.create!(
-      survey: survey,
-      week_start_on: week_start_on,
-      week_end_on: week_start_on + 6.days,
-      group_name: group_name,
-      overall_average: overall_average,
-      response_count: 2,
-      question_averages: {
-        "1" => {
-          order_index: 1,
-          body: survey.survey_questions.ordered.first.body,
-          average: overall_average
-        }
-      }
-    )
+    travel_to end_date - 1.hour do
+      answers = survey.survey_questions.ordered.zip(scores).to_h { |sq, score| [ sq.id, score ] }
+      survey.survey_assignments.find_by!(user: user).submit_scores!(answers)
+    end
   end
 
   def login_as(user)
