@@ -15,6 +15,13 @@ module TeamWeeklyScoresHelper
   OVERALL_PAD_TOP     = 18
   OVERALL_PAD_BOTTOM  = 48
 
+  # チームカードミニチャート専用
+  MINI_W        = 400
+  MINI_H        = 130
+  MINI_PAD_LEFT = 36
+  MINI_PAD_RIGHT = 12
+  MINI_PAD_Y    = 12
+
   # 全体グラフ: Y軸ラベル（1〜5）の座標一覧
   def overall_chart_y_axis
     [1, 2, 3, 4, 5].map { |s| { score: s, y: overall_y(s) } }
@@ -37,6 +44,19 @@ module TeamWeeklyScoresHelper
       next unless (index % step).zero? || index == points.size - 1
 
       { label: point.fetch(:label), x: overall_x(index, points.size) }
+    end
+  end
+
+  # ミニチャート: Y軸ラベル（1・3・5のみ）
+  def mini_chart_y_axis
+    [1, 3, 5].map { |s| { score: s, y: mini_y(s) } }
+  end
+
+  # ミニチャート: 座標付きデータ点
+  def mini_chart_points(points)
+    count = points.size
+    points.each_with_index.map do |point, index|
+      point.merge(x: mini_x(index, count), y: mini_y(point.fetch(:value)))
     end
   end
 
@@ -79,6 +99,20 @@ module TeamWeeklyScoresHelper
   end
 
   private
+
+  def mini_x(index, count)
+    return MINI_W / 2 if count <= 1
+
+    span = MINI_W - MINI_PAD_LEFT - MINI_PAD_RIGHT
+    (MINI_PAD_LEFT + (span * index.to_f / (count - 1))).round(2)
+  end
+
+  def mini_y(value)
+    value = value.to_d.clamp(SCORE_MIN, SCORE_MAX)
+    span = MINI_H - (MINI_PAD_Y * 2)
+    ratio = (value - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)
+    (MINI_H - MINI_PAD_Y - (span * ratio)).round(2)
+  end
 
   def overall_x(index, count)
     return OVERALL_W / 2 if count <= 1
