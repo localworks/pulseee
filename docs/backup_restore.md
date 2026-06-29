@@ -84,11 +84,15 @@ Command: bin/backup_database_to_s3
 
 バックアップ処理:
 
-1. `pg_dump` で `DATABASE_URL` のDBをdumpする。
-2. `gzip` で圧縮する。
-3. S3へアップロードする。
-4. 成功/失敗を標準出力/標準エラーへ出す。
-5. 失敗時は非0終了し、Render Cronの失敗検知に任せる。
+1. Render Cronが `bin/backup_database_to_s3` を実行する。
+2. スクリプトが `DATABASE_URL` を使って本番DBに接続する。
+3. `pg_dump` でDBバックアップファイルを作成する。
+4. `gzip` でバックアップファイルを圧縮する。
+5. `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` でAWS認証を行う。
+6. `aws s3 cp` でS3バケットへアップロードする。
+7. S3にバックアップファイルが保存される。
+8. 成功/失敗を標準出力/標準エラーへ出す。
+9. 失敗時は非0終了し、Render Cronの失敗検知に任せる。
 
 保存先:
 
@@ -115,6 +119,9 @@ pulseee/production/db/daily
 
 S3の保持期間は、S3 Lifecycle Ruleで管理する。
 初期設定では日次バックアップを30日保持する。
+
+Render Cronの実行ログは、Render側のログ保持・ローテーション設定に従う。
+初期運用ではログローテーション期間を1週間とし、直近1週間分のバックアップ実行結果を確認できる状態にする。
 
 IAM権限は、対象バケットのバックアップprefixへの書き込みに限定する。
 
