@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_29_051052) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_29_062536) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -211,21 +211,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_051052) do
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'active'::character varying]::text[])", name: "chk_surveys_status"
   end
 
-  create_table "team_weekly_scores", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "group_name", null: false
-    t.decimal "overall_average", precision: 4, scale: 2, null: false
-    t.jsonb "question_averages", default: {}, null: false
-    t.integer "response_count", null: false
-    t.bigint "survey_id", null: false
-    t.datetime "updated_at", null: false
-    t.date "week_end_on", null: false
-    t.date "week_start_on", null: false
-    t.index ["survey_id", "group_name"], name: "index_team_weekly_scores_on_survey_id_and_group_name", unique: true
-    t.index ["survey_id"], name: "index_team_weekly_scores_on_survey_id"
-    t.index ["week_start_on", "group_name"], name: "index_team_weekly_scores_on_week_start_on_and_group_name"
-  end
-
   create_table "user_roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "role_id", null: false
@@ -260,7 +245,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_29_051052) do
   add_foreign_key "survey_assignments", "users"
   add_foreign_key "survey_questions", "questions"
   add_foreign_key "survey_questions", "surveys"
-  add_foreign_key "team_weekly_scores", "surveys"
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users"
   add_foreign_key "users", "groups"

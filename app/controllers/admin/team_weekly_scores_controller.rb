@@ -3,17 +3,23 @@ module Admin
     before_action :authenticate_user!
     before_action :authorize_score_viewer!
 
+    UNKNOWN_GROUP_NAME = "未設定".freeze
+
+    SurveyScore = Struct.new(:survey, :week_start_on, :week_end_on, :group_name,
+                              :overall_average, :response_count, :question_averages,
+                              keyword_init: true)
+
     def index
-      @team_weekly_scores = TeamWeeklyScore.includes(:survey).recent
-      @group_names = @team_weekly_scores.map(&:group_name).uniq
-      @question_labels = question_labels
-      @weeks = @team_weekly_scores.map(&:week_start_on).uniq.sort
+      scores = build_scores
+      @weeks = scores.map(&:week_start_on).uniq.sort
       @latest_week = @weeks.last
       @previous_week = @weeks[-2]
-      @scores_by_group = @team_weekly_scores.group_by(&:group_name)
-      @latest_scores = scores_for_week(@latest_week)
-      @previous_scores = scores_for_week(@previous_week)
-      @overall_points = overall_points
+      @group_names = scores.map(&:group_name).uniq.sort
+      @question_labels = question_labels(scores)
+      @scores_by_group = scores.group_by(&:group_name)
+      @latest_scores = scores_for_week(scores, @latest_week)
+      @previous_scores = scores_for_week(scores, @previous_week)
+      @overall_points = overall_points(scores)
       @overall_latest_average = average(@latest_scores.map(&:overall_average))
       @overall_previous_average = average(@previous_scores.map(&:overall_average))
       @overall_delta = delta(@overall_latest_average, @overall_previous_average)
@@ -29,26 +35,88 @@ module Admin
       redirect_to root_path, alert: "閲覧権限が必要です"
     end
 
-    def question_labels
-      @team_weekly_scores.each_with_object({}) do |score, labels|
+    def build_scores
+      completed_surveys.flat_map do |survey|
+        rows_by_group(survey).filter_map do |group_name, rows|
+          response_count = rows.map { |r| r[:submit_token] }.uniq.size
+          next if response_count.zero?
+
+          SurveyScore.new(
+            survey: survey,
+            week_start_on: survey.start_at.to_date,
+            week_end_on: survey.end_at.to_date,
+            group_name: group_name,
+            overall_average: average(rows.map { |r| r[:score] }),
+            response_count: response_count,
+            question_averages: question_averages_for(rows)
+          )
+        end
+      end
+    end
+
+    def completed_surveys
+      Survey
+        .active
+        .where("end_at <= ?", Time.current)
+        .where("exists (select 1 from survey_questions where survey_questions.survey_id = surveys.id)")
+        .order(:start_at)
+    end
+
+    def rows_by_group(survey)
+      ScoreAnswer
+        .joins(survey_question: :survey)
+        .joins("left join answer_group_snapshots on answer_group_snapshots.submit_token = score_answers.submit_token")
+        .where(survey_questions: { survey_id: survey.id })
+        .pluck(
+          Arel.sql("coalesce(answer_group_snapshots.group_name, '#{UNKNOWN_GROUP_NAME}')"),
+          "score_answers.submit_token",
+          "survey_questions.order_index",
+          "survey_questions.body",
+          "score_answers.score"
+        )
+        .map { |group_name, submit_token, order_index, body, score|
+          { group_name: group_name, submit_token: submit_token, order_index: order_index, body: body, score: score }
+        }
+        .group_by { |r| r[:group_name] }
+    end
+
+    def question_averages_for(rows)
+      rows
+        .group_by { |r| r[:order_index] }
+        .sort_by { |order_index, _| order_index }
+        .map { |order_index, qrows|
+          [
+            order_index.to_s,
+            {
+              "order_index" => qrows.first[:order_index],
+              "body"        => qrows.first[:body],
+              "average"     => average(qrows.map { |r| r[:score] })
+            }
+          ]
+        }
+        .to_h
+    end
+
+    def question_labels(scores)
+      scores.each_with_object({}) do |score, labels|
         score.question_averages.each do |order_index, payload|
           labels[order_index] ||= "Q#{payload.fetch("order_index")}"
         end
       end
     end
 
-    def scores_for_week(week_start_on)
+    def scores_for_week(scores, week_start_on)
       return [] unless week_start_on
 
-      @team_weekly_scores.select { |score| score.week_start_on == week_start_on }
+      scores.select { |s| s.week_start_on == week_start_on }
     end
 
-    def overall_points
+    def overall_points(scores)
       @weeks.map do |week_start_on|
-        scores = scores_for_week(week_start_on)
+        week_scores = scores_for_week(scores, week_start_on)
         {
           label: I18n.l(week_start_on, format: :short),
-          value: average(scores.map(&:overall_average))
+          value: average(week_scores.map(&:overall_average))
         }
       end
     end
@@ -62,11 +130,8 @@ module Admin
           group_name: group_name,
           latest: latest,
           delta: delta(latest&.overall_average, previous&.overall_average),
-          points: scores.sort_by(&:week_start_on).map { |score|
-            {
-              label: I18n.l(score.week_start_on, format: :short),
-              value: score.overall_average
-            }
+          points: scores.sort_by(&:week_start_on).map { |s|
+            { label: I18n.l(s.week_start_on, format: :short), value: s.overall_average }
           },
           question_averages: latest&.question_averages || {}
         }
