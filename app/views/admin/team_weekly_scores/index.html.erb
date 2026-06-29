@@ -75,7 +75,7 @@
             <div class="team-score-card-header">
               <div>
                 <h2 id="team-score-card-<%= index %>"><%= card.fetch(:group_name) %></h2>
-                <span><%= l(latest.week_start_on, format: :short) %> 週</span>
+                <span><%= score_date_label(latest.week_start_on) %> 週</span>
               </div>
               <div class="team-score-card-metric">
                 <strong><%= number_with_precision(latest.overall_average, precision: 2) %></strong>
@@ -123,7 +123,7 @@
         <section class="team-score-group" aria-labelledby="team-score-group-<%= index %>">
           <div class="team-score-group-header">
             <h2 id="team-score-group-<%= index %>"><%= group_name %> 詳細</h2>
-            <span><%= scores.sum(&:response_count) %>件の回答</span>
+            <span>累計 <%= scores.sum(&:response_count) %> 件の回答</span>
           </div>
           <div class="team-score-table-wrap">
             <table class="team-score-table">
@@ -140,7 +140,7 @@
               <tbody>
                 <% scores.sort_by(&:week_start_on).reverse_each do |score| %>
                   <tr>
-                    <td><%= l(score.week_start_on, format: :short) %></td>
+                    <td><%= score_date_label(score.week_start_on) %></td>
                     <td><strong><%= number_with_precision(score.overall_average, precision: 2) %></strong></td>
                     <td><%= score.response_count %></td>
                     <% @question_labels.each_key do |order_index| %>
@@ -154,6 +154,21 @@
           </div>
         </section>
       <% end %>
+
+      <section class="team-score-question-legend" aria-labelledby="team-score-question-legend-heading">
+        <div>
+          <p class="team-score-kicker">Questions</p>
+          <h2 id="team-score-question-legend-heading">設問対応表</h2>
+        </div>
+        <dl>
+          <% @question_descriptions.each_value do |question| %>
+            <div>
+              <dt><%= question.fetch(:label) %></dt>
+              <dd><%= question.fetch(:body) %></dd>
+            </div>
+          <% end %>
+        </dl>
+      </section>
     <% else %>
       <div class="team-score-empty">
         <h2>集計データはまだありません</h2>

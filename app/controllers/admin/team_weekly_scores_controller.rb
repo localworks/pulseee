@@ -16,6 +16,7 @@ module Admin
       @previous_week = @weeks[-2]
       @group_names = scores.map(&:group_name).uniq.sort
       @question_labels = question_labels(scores)
+      @question_descriptions = question_descriptions(scores)
       @scores_by_group = scores.group_by(&:group_name)
       @latest_scores = scores_for_week(scores, @latest_week)
       @previous_scores = scores_for_week(scores, @previous_week)
@@ -115,7 +116,7 @@ module Admin
       @weeks.map do |week_start_on|
         week_scores = scores_for_week(scores, week_start_on)
         {
-          label: I18n.l(week_start_on, format: :short),
+          label: score_date_label(week_start_on),
           value: average(week_scores.map(&:overall_average))
         }
       end
@@ -131,11 +132,26 @@ module Admin
           latest: latest,
           delta: delta(latest&.overall_average, previous&.overall_average),
           points: scores.sort_by(&:week_start_on).map { |s|
-            { label: I18n.l(s.week_start_on, format: :short), value: s.overall_average }
+            { label: score_date_label(s.week_start_on), value: s.overall_average }
           },
           question_averages: latest&.question_averages || {}
         }
       end.sort_by { |card| card.fetch(:group_name) }
+    end
+
+    def question_descriptions(scores)
+      scores.each_with_object({}) do |score, descriptions|
+        score.question_averages.each do |order_index, payload|
+          descriptions[order_index] ||= {
+            label: "Q#{payload.fetch("order_index")}",
+            body: payload.fetch("body")
+          }
+        end
+      end
+    end
+
+    def score_date_label(date)
+      "#{date.month}/#{date.day}"
     end
 
     def average(values)

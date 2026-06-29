@@ -1699,6 +1699,44 @@ h3 {
   background: var(--hairline);
 }
 
+.team-score-question-legend {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+}
+
+.team-score-question-legend h2 {
+  font-size: 22px;
+}
+
+.team-score-question-legend dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.team-score-question-legend dl > div {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.team-score-question-legend dt {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.team-score-question-legend dd {
+  margin: 0;
+  color: var(--charcoal);
+  font-size: 14px;
+}
+
 /* 空状態 */
 
 .team-score-empty {
