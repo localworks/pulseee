@@ -24,7 +24,7 @@ module TeamWeeklyScoresHelper
 
   # 全体グラフ: Y軸ラベル（1〜5）の座標一覧
   def overall_chart_y_axis
-    [1, 2, 3, 4, 5].map { |s| { score: s, y: overall_y(s) } }
+    [ 1, 2, 3, 4, 5 ].map { |s| { score: s, y: overall_y(s) } }
   end
 
   # 全体グラフ: データ点座標付きリスト
@@ -39,7 +39,7 @@ module TeamWeeklyScoresHelper
   def overall_chart_x_labels(points, max_labels: 12)
     return [] if points.blank?
 
-    step = [(points.size.to_f / max_labels).ceil, 1].max
+    step = [ (points.size.to_f / max_labels).ceil, 1 ].max
     points.each_with_index.filter_map do |point, index|
       next unless (index % step).zero? || index == points.size - 1
 
@@ -49,7 +49,7 @@ module TeamWeeklyScoresHelper
 
   # ミニチャート: Y軸ラベル（1・3・5のみ）
   def mini_chart_y_axis
-    [1, 3, 5].map { |s| { score: s, y: mini_y(s) } }
+    [ 1, 3, 5 ].map { |s| { score: s, y: mini_y(s) } }
   end
 
   # ミニチャート: 座標付きデータ点
