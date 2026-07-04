@@ -52,18 +52,6 @@
 
     <div class="admin-operation-actions">
       <div>
-        <h2>今週分の期限を延長</h2>
-        <p class="muted">今週木曜開始のサーベイ回答期限を日曜0時まで延長します。</p>
-      </div>
-      <%= button_to "回答期限を延長",
-                    extend_current_week_survey_deadline_admin_survey_operation_path,
-                    method: :post,
-                    class: "button button-secondary",
-                    disabled: @current_week_survey.blank? %>
-    </div>
-
-    <div class="admin-operation-actions">
-      <div>
         <h2>未回答者を通知</h2>
         <p class="muted">現在有効なサーベイの未回答者一覧をSlackチャンネルへ投稿します。</p>
       </div>
