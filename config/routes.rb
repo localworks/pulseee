@@ -4,7 +4,6 @@ Rails.application.routes.draw do
 
     resource :survey_operation, only: :show do
       post :create_current_week_survey
-      post :extend_current_week_survey_deadline
       post :notify_unanswered_users
     end
 

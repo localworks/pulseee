@@ -107,41 +107,6 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select ".flash.notice", text: "今週分サーベイはすでに作成済みです"
   end
 
-  test "admin can extend current week survey deadline to Sunday midnight" do
-    admin = create_admin
-    login_as(admin)
-
-    travel_to Time.zone.local(2026, 6, 13, 12, 0) do
-      survey = Survey.create!(
-        title: "2026-06-11",
-        status: :active,
-        start_at: Time.zone.local(2026, 6, 11, 0, 0),
-        end_at: Time.zone.local(2026, 6, 13, 0, 0)
-      )
-
-      post extend_current_week_survey_deadline_admin_survey_operation_path
-
-      assert_redirected_to admin_survey_operation_path
-      assert_equal Time.zone.local(2026, 6, 14, 0, 0), survey.reload.end_at
-    end
-
-    follow_redirect!
-    assert_select ".flash.notice", text: "今週分サーベイの回答期限を日曜0時まで延長しました"
-  end
-
-  test "admin sees alert when extending current week survey without survey" do
-    admin = create_admin
-    login_as(admin)
-
-    travel_to Time.zone.local(2026, 6, 13, 12, 0) do
-      post extend_current_week_survey_deadline_admin_survey_operation_path
-    end
-
-    assert_redirected_to admin_survey_operation_path
-    follow_redirect!
-    assert_select ".flash.alert", text: "今週分サーベイが見つかりません"
-  end
-
   test "admin can send unanswered notification when slack is configured" do
     admin = create_admin
     User.create!(name: "未回答", email: "pending@example.com", survey_subject: true)
