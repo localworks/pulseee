@@ -1,11 +1,11 @@
-require "test_helper"
+require "rails_helper"
 
-class SurveyTest < ActiveSupport::TestCase
-  setup do
+RSpec.describe "Survey" do
+  before do
     create_standard_questions
   end
 
-  test "currently active surveys must be active and within period" do
+  it "currently active surveys must be active and within period" do
     active = Survey.create!(title: "有効", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     draft = Survey.create!(title: "下書き", status: :draft, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     expired = Survey.create!(title: "期限切れ", status: :active, start_at: 2.hours.ago, end_at: 1.hour.ago)
@@ -18,7 +18,7 @@ class SurveyTest < ActiveSupport::TestCase
     assert_not_includes Survey.currently_active, expired
   end
 
-  test "copies standard questions at creation time" do
+  it "copies standard questions at creation time" do
     survey = Survey.create!(title: "コピー", start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
     assert_equal 5, survey.survey_questions.count
@@ -29,7 +29,7 @@ class SurveyTest < ActiveSupport::TestCase
     assert_not_equal "変更後", survey.survey_questions.order(:order_index).first.body
   end
 
-  test "creates standard questions when missing" do
+  it "creates standard questions when missing" do
     Question.delete_all
 
     survey = Survey.create!(title: "設問なし", start_at: 1.hour.ago, end_at: 1.hour.from_now)
@@ -38,7 +38,7 @@ class SurveyTest < ActiveSupport::TestCase
     assert_equal Question::STANDARD_BODIES, survey.survey_questions.order(:order_index).pluck(:body)
   end
 
-  test "activating survey creates fixed assignments once" do
+  it "activating survey creates fixed assignments once" do
     subject = User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
     other = User.create!(name: "対象外", email: "other@example.com", survey_subject: false)
     survey = Survey.create!(title: "固定", status: :draft, start_at: 1.hour.ago, end_at: 1.hour.from_now)
@@ -58,7 +58,7 @@ class SurveyTest < ActiveSupport::TestCase
     assert_equal survey.survey_assignments.find_by(user: other), other.next_pending_survey_assignment
   end
 
-  test "only unanswered draft surveys can be deleted" do
+  it "only unanswered draft surveys can be deleted" do
     survey = Survey.create!(title: "削除可", status: :draft, start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
     assert survey.destroy

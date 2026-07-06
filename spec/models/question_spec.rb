@@ -1,7 +1,7 @@
-require "test_helper"
+require "rails_helper"
 
-class QuestionTest < ActiveSupport::TestCase
-  test "standard ordered uses standard order instead of body" do
+RSpec.describe "Question" do
+  it "standard ordered uses standard order instead of body" do
     create_standard_questions
     first = Question.find_by!(standard_order: 1)
 
@@ -11,7 +11,7 @@ class QuestionTest < ActiveSupport::TestCase
     assert_equal "変更後の設問文", Question.standard_ordered.first.body
   end
 
-  test "standard order must be unique" do
+  it "standard order must be unique" do
     create_standard_questions
     duplicate = Question.new(body: "重複順の設問", standard_order: 1)
 

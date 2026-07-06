@@ -1,14 +1,14 @@
-require "test_helper"
+require "rails_helper"
 
-class SurveyAssignmentTest < ActiveSupport::TestCase
-  setup do
+RSpec.describe "SurveyAssignment" do
+  before do
     create_standard_questions
     @user = User.create!(name: "回答者", email: "respondent@example.com", survey_subject: true)
     @survey = Survey.create!(title: "回答テスト", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     @assignment = @survey.survey_assignments.find_by!(user: @user)
   end
 
-  test "submits all scores anonymously" do
+  it "submits all scores anonymously" do
     assert_difference -> { ScoreAnswer.count }, 5 do
       assert @assignment.submit_scores!(answers_for(5))
     end
@@ -22,7 +22,7 @@ class SurveyAssignmentTest < ActiveSupport::TestCase
     assert_not_includes ScoreAnswer.column_names, "updated_at"
   end
 
-  test "creates group snapshot on submit" do
+  it "creates group snapshot on submit" do
     group = Group.create!(name: "開発")
     @user.update!(group: group)
 
@@ -35,7 +35,7 @@ class SurveyAssignmentTest < ActiveSupport::TestCase
     assert_equal "開発", snapshot.group_name
   end
 
-  test "creates group snapshot with nil group name when user has no group" do
+  it "creates group snapshot with nil group name when user has no group" do
     assert_difference -> { AnswerGroupSnapshot.count }, 1 do
       assert @assignment.submit_scores!(answers_for(3))
     end
@@ -45,7 +45,7 @@ class SurveyAssignmentTest < ActiveSupport::TestCase
     assert_nil snapshot.group_name
   end
 
-  test "does not save partial answers" do
+  it "does not save partial answers" do
     answers = answers_for(3)
     answers.delete(@survey.survey_questions.first.id)
 
@@ -56,13 +56,13 @@ class SurveyAssignmentTest < ActiveSupport::TestCase
     assert @assignment.reload.pending?
   end
 
-  test "prevents duplicate assignments" do
+  it "prevents duplicate assignments" do
     duplicate = SurveyAssignment.new(survey: @survey, user: @user)
 
     assert_not duplicate.valid?
   end
 
-  test "submitted assignment cannot be reopened" do
+  it "submitted assignment cannot be reopened" do
     assert @assignment.submit_scores!(answers_for(4))
 
     @assignment.state = :pending
@@ -70,7 +70,7 @@ class SurveyAssignmentTest < ActiveSupport::TestCase
     assert_not @assignment.valid?
   end
 
-  test "expired or submitted assignments are not answerable" do
+  it "expired or submitted assignments are not answerable" do
     assert @assignment.answerable?
 
     @survey.update!(end_at: 1.minute.ago)

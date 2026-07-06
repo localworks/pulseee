@@ -1,7 +1,7 @@
-require "test_helper"
+require "rails_helper"
 
-class Surveys::CreateCurrentWeekSurveyTest < ActiveSupport::TestCase
-  test "creates active current week survey once" do
+RSpec.describe "Surveys::CreateCurrentWeekSurvey" do
+  it "creates active current week survey once" do
     user = User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
 
     travel_to Time.zone.local(2026, 6, 11, 12, 0) do
@@ -21,7 +21,7 @@ class Surveys::CreateCurrentWeekSurveyTest < ActiveSupport::TestCase
     end
   end
 
-  test "does not create survey on Wednesday" do
+  it "does not create survey on Wednesday" do
     travel_to Time.zone.local(2026, 6, 10, 12, 0) do
       assert_nil Surveys::CreateCurrentWeekSurvey.current_period
       assert_nil Surveys::CreateCurrentWeekSurvey.current_survey
@@ -34,7 +34,7 @@ class Surveys::CreateCurrentWeekSurveyTest < ActiveSupport::TestCase
     end
   end
 
-  test "does not create survey on Friday" do
+  it "does not create survey on Friday" do
     travel_to Time.zone.local(2026, 6, 12, 12, 0) do
       assert_nil Surveys::CreateCurrentWeekSurvey.current_period
       assert_nil Surveys::CreateCurrentWeekSurvey.current_survey
@@ -47,7 +47,7 @@ class Surveys::CreateCurrentWeekSurveyTest < ActiveSupport::TestCase
     end
   end
 
-  test "activates existing current week draft" do
+  it "activates existing current week draft" do
     travel_to Time.zone.local(2026, 6, 11, 12, 0) do
       start_at, end_at = Surveys::CreateCurrentWeekSurvey.current_period
       draft = Survey.create!(title: "既存下書き", status: :draft, start_at: start_at, end_at: end_at)

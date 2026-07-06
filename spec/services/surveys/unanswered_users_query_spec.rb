@@ -1,11 +1,11 @@
-require "test_helper"
+require "rails_helper"
 
-class Surveys::UnansweredUsersQueryTest < ActiveSupport::TestCase
-  setup do
+RSpec.describe "Surveys::UnansweredUsersQuery" do
+  before do
     Question.ensure_standard_questions!
   end
 
-  test "returns pending survey subjects ordered by name and email" do
+  it "returns pending survey subjects ordered by name and email" do
     answered = User.create!(name: "回答済み", email: "answered@example.com", survey_subject: true)
     second = User.create!(name: "未回答B", email: "second@example.com", survey_subject: true)
     first = User.create!(name: "未回答A", email: "first@example.com", survey_subject: true)

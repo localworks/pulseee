@@ -1,21 +1,21 @@
-require "test_helper"
+require "rails_helper"
 require "active_job/test_helper"
 
-class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
+RSpec.describe "AdminSurveyOperationsTest", type: :request do
   include ActiveJob::TestHelper
 
-  setup do
+  before do
     OmniAuth.config.test_mode = true
     Question.ensure_standard_questions!
   end
 
-  teardown do
+  after do
     OmniAuth.config.mock_auth[:google_oauth2] = nil
     OmniAuth.config.test_mode = false
     clear_enqueued_jobs
   end
 
-  test "admin sees survey operation page" do
+  it "admin sees survey operation page" do
     admin = create_admin
     User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
 
@@ -34,7 +34,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "admin can navigate to survey operation from rails admin dashboard" do
+  it "admin can navigate to survey operation from rails admin dashboard" do
     admin = create_admin
     login_as(admin)
 
@@ -44,7 +44,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select "a[href='/admin/survey_operation']", text: "サーベイ運用を開く"
   end
 
-  test "non admins cannot access survey operation page" do
+  it "non admins cannot access survey operation page" do
     member = User.create!(name: "一般", email: "member@example.com")
     login_as(member)
 
@@ -54,7 +54,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert", text: "管理者権限が必要です"
   end
 
-  test "admin can create current week survey from operation page" do
+  it "admin can create current week survey from operation page" do
     admin = create_admin
     login_as(admin)
 
@@ -71,7 +71,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select ".flash.notice", text: "今週分サーベイを作成しました"
   end
 
-  test "admin cannot create current week survey outside Thursday" do
+  it "admin cannot create current week survey outside Thursday" do
     admin = create_admin
     login_as(admin)
 
@@ -88,7 +88,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert", text: "サーベイを作成できるのは木曜日のみです"
   end
 
-  test "admin sees already created notice when current week survey exists" do
+  it "admin sees already created notice when current week survey exists" do
     admin = create_admin
     login_as(admin)
 
@@ -107,7 +107,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_select ".flash.notice", text: "今週分サーベイはすでに作成済みです"
   end
 
-  test "admin can send unanswered notification when slack is configured" do
+  it "admin can send unanswered notification when slack is configured" do
     admin = create_admin
     User.create!(name: "未回答", email: "pending@example.com", survey_subject: true)
     survey = Survey.create!(title: "今週", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
@@ -130,7 +130,7 @@ class AdminSurveyOperationsTest < ActionDispatch::IntegrationTest
     assert_equal survey.id, notified_survey_id
   end
 
-  test "notification job is not enqueued without slack configuration" do
+  it "notification job is not enqueued without slack configuration" do
     admin = create_admin
     Survey.create!(title: "今週", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     login_as(admin)

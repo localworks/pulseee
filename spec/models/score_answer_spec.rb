@@ -1,27 +1,27 @@
-require "test_helper"
+require "rails_helper"
 
-class ScoreAnswerTest < ActiveSupport::TestCase
-  setup do
+RSpec.describe "ScoreAnswer" do
+  before do
     create_standard_questions
     survey = Survey.create!(title: "スコア", start_at: 1.hour.ago, end_at: 1.hour.from_now)
     @survey_question = survey.survey_questions.first
   end
 
-  test "score must be between one and five" do
+  it "score must be between one and five" do
     assert ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 1).valid?
     assert ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 5).valid?
     assert_not ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 0).valid?
     assert_not ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 6).valid?
   end
 
-  test "submit token and survey question pair must be unique" do
+  it "submit token and survey question pair must be unique" do
     ScoreAnswer.create!(submit_token: "token", survey_question: @survey_question, score: 3)
     duplicate = ScoreAnswer.new(submit_token: "token", survey_question: @survey_question, score: 4)
 
     assert_not duplicate.valid?
   end
 
-  test "score answers are append only" do
+  it "score answers are append only" do
     answer = ScoreAnswer.create!(submit_token: "token", survey_question: @survey_question, score: 3)
     answer.score = 4
 

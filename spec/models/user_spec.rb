@@ -1,11 +1,11 @@
-require "test_helper"
+require "rails_helper"
 
-class UserTest < ActiveSupport::TestCase
-  setup do
+RSpec.describe "User" do
+  before do
     create_standard_questions
   end
 
-  test "email is normalized and unique" do
+  it "email is normalized and unique" do
     User.create!(name: "利用者", email: "USER@example.com", survey_subject: true)
     duplicate = User.new(name: "重複", email: " user@example.com ", survey_subject: true)
 
@@ -13,7 +13,7 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "user@example.com", duplicate.email
   end
 
-  test "slack user id is normalized and unique when present" do
+  it "slack user id is normalized and unique when present" do
     user = User.create!(name: "Slack利用者", email: "slack@example.com", slack_user_id: " U12345678 ")
 
     duplicate = User.new(name: "重複", email: "duplicate@example.com", slack_user_id: "U12345678")
@@ -25,7 +25,7 @@ class UserTest < ActiveSupport::TestCase
     assert_nil blank.slack_user_id
   end
 
-  test "system admin role check" do
+  it "system admin role check" do
     role = Role.create!(name: "system_admin")
     user = User.create!(name: "管理者", email: "admin@example.com")
 
@@ -36,7 +36,7 @@ class UserTest < ActiveSupport::TestCase
     assert user.system_admin?
   end
 
-  test "manager can view scores" do
+  it "manager can view scores" do
     role = Role.create!(name: "manager")
     user = User.create!(name: "マネージャー", email: "manager@example.com")
 
@@ -49,7 +49,7 @@ class UserTest < ActiveSupport::TestCase
     assert user.score_viewer?
   end
 
-  test "survey subject receives assignments for currently active surveys" do
+  it "survey subject receives assignments for currently active surveys" do
     user = User.create!(name: "対象者", email: "subject@example.com", survey_subject: false)
     active = Survey.create!(title: "実施中", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     draft = Survey.create!(title: "下書き", status: :draft, start_at: 1.hour.ago, end_at: 1.hour.from_now)

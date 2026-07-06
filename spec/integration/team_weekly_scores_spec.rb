@@ -1,17 +1,17 @@
-require "test_helper"
+require "rails_helper"
 
-class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
-  setup do
+RSpec.describe "TeamWeeklyScoresTest", type: :request do
+  before do
     OmniAuth.config.test_mode = true
     Question.ensure_standard_questions!
   end
 
-  teardown do
+  after do
     OmniAuth.config.mock_auth[:google_oauth2] = nil
     OmniAuth.config.test_mode = false
   end
 
-  test "manager can view all team weekly scores" do
+  it "manager can view all team weekly scores" do
     manager = create_user_with_role("manager")
     create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: Date.new(2026, 6, 8))
     create_survey_with_responses(group_name: "営業", scores: [ 4, 4, 3, 3, 3 ], week_start_on: Date.new(2026, 6, 8))
@@ -36,7 +36,7 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     assert_no_match "回答率", response.body
   end
 
-  test "system admin can view weekly response rates" do
+  it "system admin can view weekly response rates" do
     admin = create_user_with_role("system_admin")
     survey = create_survey_for_response_rate(week_start_on: Date.new(2026, 6, 8))
     submit_assignment(survey, "開発回答者")
@@ -54,7 +54,7 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     assert_select ".team-response-rate-groups span", text: /営業\s+0.0%\s+0\/1/
   end
 
-  test "weekly score details are ordered newest first" do
+  it "weekly score details are ordered newest first" do
     manager = create_user_with_role("manager")
     create_survey_with_responses(group_name: "開発", scores: [ 4, 4, 3, 3, 3 ], week_start_on: Date.new(2026, 6, 1))
     create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: Date.new(2026, 6, 8))
@@ -68,7 +68,7 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     assert_match(%r{6/8.*6/1}m, response.body)
   end
 
-  test "system admin can navigate from home" do
+  it "system admin can navigate from home" do
     admin = create_user_with_role("system_admin")
     login_as(admin)
 
@@ -78,7 +78,7 @@ class TeamWeeklyScoresTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{admin_team_weekly_scores_path}']", text: "チームスコア"
   end
 
-  test "member cannot view team weekly scores" do
+  it "member cannot view team weekly scores" do
     member = User.create!(name: "一般", email: "member-score@example.com")
     login_as(member)
 

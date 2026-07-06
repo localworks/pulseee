@@ -1,8 +1,8 @@
-require "test_helper"
+require "rails_helper"
 require "csv"
 
-class SurveyResultCsvExportTest < ActionDispatch::IntegrationTest
-  setup do
+RSpec.describe "SurveyResultCsvExportTest", type: :request do
+  before do
     OmniAuth.config.test_mode = true
     @system_admin_role = Role.create!(name: "system_admin")
     @admin = User.create!(name: "管理者", email: "csv-admin@example.com")
@@ -10,12 +10,12 @@ class SurveyResultCsvExportTest < ActionDispatch::IntegrationTest
     @member = User.create!(name: "一般", email: "csv-member@example.com")
   end
 
-  teardown do
+  after do
     OmniAuth.config.mock_auth[:google_oauth2] = nil
     OmniAuth.config.test_mode = false
   end
 
-  test "system admin can export anonymous survey results as csv" do
+  it "system admin can export anonymous survey results as csv" do
     survey = create_answered_survey
 
     login_as(@admin)
@@ -47,7 +47,7 @@ class SurveyResultCsvExportTest < ActionDispatch::IntegrationTest
     assert_equal "集計テスト", first_row["サーベイ名"]
   end
 
-  test "system admin sees csv download action on survey detail" do
+  it "system admin sees csv download action on survey detail" do
     survey = create_answered_survey
 
     login_as(@admin)
@@ -62,7 +62,7 @@ class SurveyResultCsvExportTest < ActionDispatch::IntegrationTest
     assert_equal "text/csv", response.media_type
   end
 
-  test "csv includes group name snapshot at time of submission" do
+  it "csv includes group name snapshot at time of submission" do
     group = Group.create!(name: "開発")
     create_standard_questions
     user = User.create!(name: "開発者", email: "csv-dev@example.com", survey_subject: true, group: group)
@@ -81,7 +81,7 @@ class SurveyResultCsvExportTest < ActionDispatch::IntegrationTest
     assert_equal "開発", csv.first["グループ"]
   end
 
-  test "survey result csv export requires system admin" do
+  it "survey result csv export requires system admin" do
     survey = create_answered_survey
 
     get admin_survey_results_path(survey, format: :csv)

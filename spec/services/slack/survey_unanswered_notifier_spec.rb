@@ -1,11 +1,11 @@
-require "test_helper"
+require "rails_helper"
 
-class Slack::SurveyUnansweredNotifierTest < ActiveSupport::TestCase
-  setup do
+RSpec.describe "Slack::SurveyUnansweredNotifier" do
+  before do
     Question.ensure_standard_questions!
   end
 
-  test "posts unanswered users to configured webhook" do
+  it "posts unanswered users to configured webhook" do
     survey = Survey.create!(title: "通知テスト", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     users = [
       User.create!(name: "未回答A", email: "first@example.com", slack_user_id: "U12345678", survey_subject: true),
@@ -38,7 +38,7 @@ class Slack::SurveyUnansweredNotifierTest < ActiveSupport::TestCase
     TEXT
   end
 
-  test "raises when webhook is not configured" do
+  it "raises when webhook is not configured" do
     survey = Survey.create!(title: "通知テスト", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
     assert_raises Slack::SurveyUnansweredNotifier::ConfigurationError do
@@ -46,7 +46,7 @@ class Slack::SurveyUnansweredNotifierTest < ActiveSupport::TestCase
     end
   end
 
-  test "raises when slack returns non success response" do
+  it "raises when slack returns non success response" do
     survey = Survey.create!(title: "通知テスト", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
     assert_raises Slack::SurveyUnansweredNotifier::DeliveryError do

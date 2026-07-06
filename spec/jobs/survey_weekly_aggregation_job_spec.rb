@@ -1,11 +1,11 @@
-require "test_helper"
+require "rails_helper"
 
-class SurveyWeeklyAggregationJobTest < ActiveJob::TestCase
-  setup do
+RSpec.describe "SurveyWeeklyAggregationJob", type: :job do
+  before do
     Question.ensure_standard_questions!
   end
 
-  test "generates results for the latest ended active survey" do
+  it "generates results for the latest ended active survey" do
     older = Survey.create!(
       title: "古いサーベイ",
       status: :active,
@@ -42,7 +42,7 @@ class SurveyWeeklyAggregationJobTest < ActiveJob::TestCase
     SurveyResultCsvExporter.define_singleton_method(:new, original_new) if original_new
   end
 
-  test "does nothing when no ended active survey exists" do
+  it "does nothing when no ended active survey exists" do
     Survey.create!(
       title: "実施中のサーベイ",
       status: :active,

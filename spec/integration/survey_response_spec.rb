@@ -1,17 +1,17 @@
-require "test_helper"
+require "rails_helper"
 
-class SurveyResponseTest < ActionDispatch::IntegrationTest
-  setup do
+RSpec.describe "SurveyResponseTest", type: :request do
+  before do
     OmniAuth.config.test_mode = true
     create_standard_questions
   end
 
-  teardown do
+  after do
     OmniAuth.config.mock_auth[:google_oauth2] = nil
     OmniAuth.config.test_mode = false
   end
 
-  test "logged in user sees home" do
+  it "logged in user sees home" do
     user = User.create!(name: "利用者", email: "user@example.com")
 
     login_as(user)
@@ -22,7 +22,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select ".home-copy-line", text: "利用者さん"
   end
 
-  test "pending user can answer active survey once" do
+  it "pending user can answer active survey once" do
     travel_to Time.zone.local(2026, 6, 13, 12, 0) do
       user = User.create!(name: "対象者", email: "subject@example.com", survey_subject: true)
       survey = Survey.create!(
@@ -69,7 +69,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "expired and out of target surveys are not shown" do
+  it "expired and out of target surveys are not shown" do
     user = User.create!(name: "対象者", email: "hidden@example.com", survey_subject: true)
     expired = Survey.create!(title: "期限切れ", status: :active, start_at: 2.hours.ago, end_at: 1.hour.ago)
     assignment = expired.survey_assignments.find_by!(user: user)
@@ -89,7 +89,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
   end
 
-  test "partial answers keep input and do not save" do
+  it "partial answers keep input and do not save" do
     user = User.create!(name: "対象者", email: "partial@example.com", survey_subject: true)
     survey = Survey.create!(title: "未回答チェック", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     assignment = survey.survey_assignments.find_by!(user: user)
@@ -109,7 +109,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select ".score-choice.is-selected", count: 4
   end
 
-  test "missing answers are rejected without server error" do
+  it "missing answers are rejected without server error" do
     user = User.create!(name: "対象者", email: "missing@example.com", survey_subject: true)
     survey = Survey.create!(title: "未送信チェック", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     assignment = survey.survey_assignments.find_by!(user: user)
@@ -124,7 +124,7 @@ class SurveyResponseTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert", text: "すべての設問に回答してください"
   end
 
-  test "unexpected answer keys are ignored" do
+  it "unexpected answer keys are ignored" do
     user = User.create!(name: "対象者", email: "extra@example.com", survey_subject: true)
     survey = Survey.create!(title: "余計なキー", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     assignment = survey.survey_assignments.find_by!(user: user)

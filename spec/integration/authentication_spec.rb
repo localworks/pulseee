@@ -1,16 +1,16 @@
-require "test_helper"
+require "rails_helper"
 
-class AuthenticationTest < ActionDispatch::IntegrationTest
-  setup do
+RSpec.describe "AuthenticationTest", type: :request do
+  before do
     OmniAuth.config.test_mode = true
   end
 
-  teardown do
+  after do
     OmniAuth.config.mock_auth[:google_oauth2] = nil
     OmniAuth.config.test_mode = false
   end
 
-  test "registered user can login with google auth mock" do
+  it "registered user can login with google auth mock" do
     User.create!(name: "登録済み", email: "registered@example.com")
     mock_google_auth("registered@example.com")
 
@@ -22,7 +22,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select ".flash.notice[data-controller='flash']"
   end
 
-  test "unregistered google auth user cannot login" do
+  it "unregistered google auth user cannot login" do
     mock_google_auth("unknown@example.com")
 
     post "/auth/google_oauth2"
@@ -35,7 +35,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select ".flash.alert[data-controller='flash']"
   end
 
-  test "seed admin email can bootstrap first production login" do
+  it "seed admin email can bootstrap first production login" do
     with_seed_admin(email: "kim@localworks.jp", name: "Kim") do
       mock_google_auth("kim@localworks.jp")
 
@@ -52,13 +52,13 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert admin.system_admin?
   end
 
-  test "missing google configuration route stays inside app" do
+  it "missing google configuration route stays inside app" do
     post "/auth/google_oauth2", env: { "omniauth.test_mode" => false }
 
     assert_response :redirect
   end
 
-  test "login greeting changes by time of day" do
+  it "login greeting changes by time of day" do
     {
       Time.zone.local(2026, 6, 7, 9, 59) => "おはようございます。",
       Time.zone.local(2026, 6, 7, 10, 0) => "こんにちは。",
@@ -74,7 +74,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "stale google callback redirects to login" do
+  it "stale google callback redirects to login" do
     OmniAuth.config.test_mode = false
 
     get "/auth/google_oauth2/callback", params: { state: "stale-state", code: "stale-code" }
@@ -82,13 +82,13 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
   end
 
-  test "development login is unavailable outside development" do
+  it "development login is unavailable outside development" do
     post development_login_path
 
     assert_response :not_found
   end
 
-  test "logout redirects to login screen" do
+  it "logout redirects to login screen" do
     user = User.create!(name: "登録済み", email: "logout@example.com")
 
     login_as(user)
@@ -102,7 +102,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     assert_select "button.google-login-button", text: /Google でログイン/
   end
 
-  test "rails admin is restricted to system admins" do
+  it "rails admin is restricted to system admins" do
     system_admin_role = Role.create!(name: "system_admin")
     admin = User.create!(name: "管理者", email: "admin@example.com")
     admin.roles << system_admin_role
