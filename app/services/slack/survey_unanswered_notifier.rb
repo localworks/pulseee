@@ -5,6 +5,7 @@ require "uri"
 module Slack
   class SurveyUnansweredNotifier
     WEBHOOK_ENV_KEY = "SLACK_SURVEY_WEBHOOK_URL"
+    SERVICE_URL = "https://pulseee-oknn.onrender.com/"
 
     class ConfigurationError < StandardError; end
     class DeliveryError < StandardError; end
@@ -67,16 +68,12 @@ module Slack
       [
         "以下の方は今週のサーベイ回答が完了していません。",
         "本日 24:00 までに回答をしてください。",
-        service_url,
+        SERVICE_URL,
         "",
         users.map { |user| "- <@#{user.slack_user_id}>" }.join("\n"),
         "",
         "※ この通知を認識したら、リアクションをお願いします。"
       ].join("\n")
-    end
-
-    def service_url
-      Rails.application.config.app_settings.fetch(:service_url)
     end
   end
 end
