@@ -46,6 +46,10 @@ RSpec.describe "SurveyResponseTest", type: :request do
       assert_select ".score-choice", text: "そうだ", count: 5
       assert_select ".score-choice", text: "どちらとも言えない", count: 5
       assert_select ".score-choice", text: "ちがう", count: 5
+      assert_select "label[for='free_text_answer']", text: "今週、よかったことや気になったことを教えてください。（任意）"
+      assert_select "#free-text-answer-help", text: "回答は完全匿名です。個人が特定される形で共有されることはありません。"
+      assert_select "textarea#free_text_answer[maxlength='#{FreeTextAnswer::MAX_LENGTH}']", count: 1
+
       assert_difference -> { ScoreAnswer.count }, 5 do
         assert_difference -> { FreeTextAnswer.count }, 1 do
           post survey_assignment_response_path(assignment),
@@ -102,7 +106,8 @@ RSpec.describe "SurveyResponseTest", type: :request do
     login_as(user)
 
     assert_no_difference -> { ScoreAnswer.count } do
-      post survey_assignment_response_path(assignment), params: { answers: answers }
+      post survey_assignment_response_path(assignment),
+           params: { answers: answers, free_text_answer: "入力途中の内容" }
     end
 
     assert_response :unprocessable_content
@@ -110,6 +115,7 @@ RSpec.describe "SurveyResponseTest", type: :request do
     assert_select ".question-progress-item.is-answered", count: 4
     assert_select "input.score-choice-input[checked='checked']", count: 4
     assert_select ".score-choice.is-selected", count: 4
+    assert_select "textarea#free_text_answer", text: "入力途中の内容"
   end
 
   it "missing answers are rejected without server error" do
