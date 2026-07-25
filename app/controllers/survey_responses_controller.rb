@@ -4,12 +4,14 @@ class SurveyResponsesController < ApplicationController
 
   def new
     @answers = {}
+    @free_text_answer = ""
   end
 
   def create
     @answers = answer_params.to_h
+    @free_text_answer = free_text_answer_param
 
-    if @assignment.submit_scores!(@answers)
+    if @assignment.submit_scores!(@answers, free_text: @free_text_answer)
       redirect_to root_path, notice: "回答を送信しました"
     else
       flash.now[:alert] = @assignment.errors.full_messages.first || "すべての設問に回答してください"
@@ -35,5 +37,9 @@ class SurveyResponsesController < ApplicationController
     permitted_question_ids = question_ids.select { |id| id.match?(/\A\d+\z/) }
 
     answers.permit(*permitted_question_ids)
+  end
+
+  def free_text_answer_param
+    params.permit(:free_text_answer).fetch(:free_text_answer, "")
   end
 end

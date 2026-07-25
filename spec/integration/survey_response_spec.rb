@@ -46,14 +46,17 @@ RSpec.describe "SurveyResponseTest", type: :request do
       assert_select ".score-choice", text: "そうだ", count: 5
       assert_select ".score-choice", text: "どちらとも言えない", count: 5
       assert_select ".score-choice", text: "ちがう", count: 5
-
       assert_difference -> { ScoreAnswer.count }, 5 do
-        post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 4) }
+        assert_difference -> { FreeTextAnswer.count }, 1 do
+          post survey_assignment_response_path(assignment),
+               params: { answers: answers_for(survey, 4), free_text_answer: "チーム内の連携がよかった" }
+        end
       end
       follow_redirect!
 
       assert_select ".flash.notice", text: "回答を送信しました"
       assert_select ".home-meta-val", text: "回答が必要なサーベイはありません"
+      assert_equal "チーム内の連携がよかった", FreeTextAnswer.last.body
 
       assert_no_difference -> { ScoreAnswer.count } do
         post survey_assignment_response_path(assignment), params: { answers: answers_for(survey, 5) }

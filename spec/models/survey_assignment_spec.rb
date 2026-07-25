@@ -45,6 +45,37 @@ RSpec.describe "SurveyAssignment" do
     assert_nil snapshot.group_name
   end
 
+  it "stores an optional free text answer with the same anonymous submit token" do
+    assert_difference -> { FreeTextAnswer.count }, 1 do
+      assert @assignment.submit_scores!(answers_for(4), free_text: "  よかったこと  ")
+    end
+
+    token = ScoreAnswer.last.submit_token
+    answer = FreeTextAnswer.find_by!(submit_token: token)
+    assert_equal @survey, answer.survey
+    assert_equal "よかったこと", answer.body
+  end
+
+  it "does not create a free text answer when it is blank" do
+    assert_no_difference -> { FreeTextAnswer.count } do
+      assert @assignment.submit_scores!(answers_for(4), free_text: "   ")
+    end
+  end
+
+  it "rejects an overlong free text answer without saving scores" do
+    assert_no_difference -> { ScoreAnswer.count } do
+      assert_no_difference -> { FreeTextAnswer.count } do
+        assert_not @assignment.submit_scores!(
+          answers_for(4),
+          free_text: "あ" * (FreeTextAnswer::MAX_LENGTH + 1)
+        )
+      end
+    end
+
+    assert_includes @assignment.errors.full_messages, "自由記述は2000文字以内で入力してください"
+    assert @assignment.reload.pending?
+  end
+
   it "does not save partial answers" do
     answers = answers_for(3)
     answers.delete(@survey.survey_questions.first.id)
