@@ -18,15 +18,21 @@ RSpec.describe "Survey" do
     assert_not_includes Survey.currently_active, expired
   end
 
-  it "copies standard questions at creation time" do
-    survey = Survey.create!(title: "コピー", start_at: 1.hour.ago, end_at: 1.hour.from_now)
+  it "copies standard questions in a randomized fixed order at creation time" do
+    survey = Survey.new(title: "コピー", start_at: 1.hour.ago, end_at: 1.hour.from_now)
+    randomized_questions = Question.standard_ordered.reverse.to_a
+    allow(survey).to receive(:randomized_standard_questions).and_return(randomized_questions)
+
+    survey.save!
 
     assert_equal 5, survey.survey_questions.count
-    assert_equal Question::STANDARD_BODIES, survey.survey_questions.order(:order_index).pluck(:body)
+    expected_bodies = Question::STANDARD_BODIES.reverse
+    assert_equal expected_bodies, survey.survey_questions.order(:order_index).pluck(:body)
+    assert_equal (1..5).to_a, survey.survey_questions.order(:order_index).pluck(:order_index)
 
     Question.first.update!(body: "変更後")
 
-    assert_not_equal "変更後", survey.survey_questions.order(:order_index).first.body
+    assert_equal expected_bodies, survey.reload.survey_questions.order(:order_index).pluck(:body)
   end
 
   it "creates standard questions when missing" do
@@ -35,7 +41,8 @@ RSpec.describe "Survey" do
     survey = Survey.create!(title: "設問なし", start_at: 1.hour.ago, end_at: 1.hour.from_now)
 
     assert_equal 5, Question.count
-    assert_equal Question::STANDARD_BODIES, survey.survey_questions.order(:order_index).pluck(:body)
+    assert_equal Question::STANDARD_BODIES.sort, survey.survey_questions.order(:order_index).pluck(:body).sort
+    assert_equal (1..5).to_a, survey.survey_questions.order(:order_index).pluck(:order_index)
   end
 
   it "activating survey creates fixed assignments once" do
