@@ -41,9 +41,8 @@ MOCK_GOOGLE_AUTH=1 DEV_LOGIN_EMAIL="member@example.com" bin/rails server
 
 ## 開発用ログイン
 
-Google認証を設定していない開発環境では、ログイン画面に「開発用ログイン」ボタンが表示されます。
+開発環境では、Google認証の設定にかかわらずログイン画面に「開発用ログイン」ボタンが表示されます。
 
-既定では seed に含まれる `admin-dev@example.com` でログインします。
 
 ```bash
 bin/rails db:seed

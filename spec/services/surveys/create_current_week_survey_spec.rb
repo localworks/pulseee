@@ -47,6 +47,30 @@ RSpec.describe "Surveys::CreateCurrentWeekSurvey" do
     end
   end
 
+  it "creates survey outside Thursday when any day is allowed" do
+    travel_to Time.zone.local(2026, 6, 10, 12, 0) do
+      assert_difference -> { Survey.count }, 1 do
+        @survey = Surveys::CreateCurrentWeekSurvey.call(allow_any_day: true)
+      end
+
+      assert @survey.active?
+      assert_equal "2026-06-10", @survey.title
+      assert_equal Time.zone.local(2026, 6, 10, 0, 0), @survey.start_at
+      assert_equal Time.zone.local(2026, 6, 13, 0, 0), @survey.end_at
+      assert_equal @survey, Surveys::CreateCurrentWeekSurvey.current_survey(allow_any_day: true)
+
+      assert_no_difference -> { Survey.count } do
+        assert_equal @survey, Surveys::CreateCurrentWeekSurvey.call(allow_any_day: true)
+      end
+
+      next_day = Time.zone.local(2026, 6, 11, 12, 0)
+      assert_no_difference -> { Survey.count } do
+        assert_equal @survey, Surveys::CreateCurrentWeekSurvey.call(now: next_day, allow_any_day: true)
+      end
+      assert_equal @survey, Surveys::CreateCurrentWeekSurvey.current_survey(now: next_day, allow_any_day: true)
+    end
+  end
+
   it "activates existing current week draft" do
     travel_to Time.zone.local(2026, 6, 11, 12, 0) do
       start_at, end_at = Surveys::CreateCurrentWeekSurvey.current_period
