@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_04_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_25_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,6 +20,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_04_000001) do
     t.string "submit_token", null: false
     t.datetime "updated_at", null: false
     t.index ["submit_token"], name: "index_answer_group_snapshots_on_submit_token", unique: true
+  end
+
+  create_table "free_text_answers", force: :cascade do |t|
+    t.text "body", null: false
+    t.string "submit_token", null: false
+    t.bigint "survey_id", null: false
+    t.index ["submit_token"], name: "index_free_text_answers_on_submit_token", unique: true
+    t.index ["survey_id"], name: "index_free_text_answers_on_survey_id"
   end
 
   create_table "groups", force: :cascade do |t|
@@ -236,6 +244,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_04_000001) do
     t.index ["slack_user_id"], name: "index_users_on_slack_user_id", unique: true, where: "(slack_user_id IS NOT NULL)"
   end
 
+  add_foreign_key "free_text_answers", "surveys"
   add_foreign_key "score_answers", "survey_questions"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
