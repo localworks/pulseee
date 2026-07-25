@@ -88,6 +88,25 @@ RSpec.describe "AdminSurveyOperationsTest", type: :request do
     assert_select ".flash.alert", text: "サーベイを作成できるのは木曜日のみです"
   end
 
+  it "admin can create survey outside Thursday in development" do
+    allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new("development"))
+    admin = create_admin
+    login_as(admin)
+
+    travel_to Time.zone.local(2026, 6, 10, 12, 0) do
+      assert_difference("Survey.count", 1) do
+        assert_no_enqueued_jobs do
+          post create_current_week_survey_admin_survey_operation_path
+        end
+      end
+    end
+
+    survey = Survey.order(:id).last
+    assert_equal Time.zone.local(2026, 6, 10, 0, 0), survey.start_at
+    assert_equal Time.zone.local(2026, 6, 13, 0, 0), survey.end_at
+    assert_redirected_to admin_survey_operation_path
+  end
+
   it "admin sees already created notice when current week survey exists" do
     admin = create_admin
     login_as(admin)
