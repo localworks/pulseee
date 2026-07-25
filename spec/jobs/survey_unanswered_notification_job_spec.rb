@@ -8,6 +8,7 @@ RSpec.describe "SurveyUnansweredNotificationJob", type: :job do
   it "notifies unanswered users for specified survey" do
     answered = User.create!(name: "回答済み", email: "answered@example.com", survey_subject: true)
     pending = User.create!(name: "未回答", email: "pending@example.com", survey_subject: true)
+    User.create!(name: "通知対象外", email: "nosaki@localworks.jp", survey_subject: true)
     survey = Survey.create!(title: "通知対象", status: :active, start_at: 1.hour.ago, end_at: 1.hour.from_now)
     survey.survey_assignments.find_by!(user: answered).submit_scores!(answers_for(survey, 4))
     notified = []
