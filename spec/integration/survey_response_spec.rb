@@ -47,7 +47,8 @@ RSpec.describe "SurveyResponseTest", type: :request do
       assert_select ".score-choice", text: "どちらとも言えない", count: 5
       assert_select ".score-choice", text: "ちがう", count: 5
       assert_select "label[for='free_text_answer']", text: "今週、よかったことや気になったことを教えてください。（任意）"
-      assert_select "#free-text-answer-help", text: "回答は完全匿名です。個人が特定される形で共有されることはありません。"
+      assert_select "#free-text-answer-help",
+                    text: "回答は氏名やメールアドレスとは紐づけずに保存されます。個人を特定できる情報は入力しないでください。"
       assert_select "textarea#free_text_answer[maxlength='#{FreeTextAnswer::MAX_LENGTH}']", count: 1
 
       assert_difference -> { ScoreAnswer.count }, 5 do
