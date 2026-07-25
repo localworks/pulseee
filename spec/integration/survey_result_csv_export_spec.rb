@@ -97,6 +97,23 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
     assert_equal "開発", csv.first["グループ"]
   end
 
+  it "neutralizes spreadsheet formulas in free text answers" do
+    formula_values = [ "=1+1", "+1+1", "-1+1", "@SUM(A1:A2)", "\t=1+1", "\r=1+1" ]
+    survey = create_answered_survey(
+      free_texts: formula_values,
+      scores: Array.new(formula_values.size, 3)
+    )
+
+    login_as(@admin)
+    get admin_survey_results_path(survey, format: :csv)
+
+    csv = CSV.parse(response.body.delete_prefix(SurveyResultCsvExporter::UTF_8_BOM), headers: true)
+    exported_values = csv.map { |row| row["自由記述"] }
+
+    expected_values = formula_values.map { |value| "'#{value.strip}" }
+    assert_equal expected_values.sort, exported_values.sort
+  end
+
   it "survey result csv export requires system admin" do
     survey = create_answered_survey
 
@@ -112,9 +129,12 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
 
   private
 
-  def create_answered_survey
+  def create_answered_survey(
+    free_texts: [ nil, "気になったことがあります", "連携がよかったです" ],
+    scores: [ 1, 3, 5 ]
+  )
     create_standard_questions
-    users = 3.times.map do |index|
+    users = free_texts.size.times.map do |index|
       User.create!(
         name: "対象者#{index + 1}",
         email: "csv-subject-#{index + 1}@example.com",
@@ -129,8 +149,7 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
       end_at: 1.hour.from_now
     )
 
-    free_texts = [ nil, "気になったことがあります", "連携がよかったです" ]
-    users.zip([ 1, 3, 5 ], free_texts).each do |user, score, free_text|
+    users.zip(scores, free_texts).each do |user, score, free_text|
       assignment = survey.survey_assignments.find_by!(user: user)
       answers = survey.survey_questions.index_with { score }.transform_keys(&:id)
 
