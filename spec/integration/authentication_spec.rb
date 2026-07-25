@@ -88,6 +88,34 @@ RSpec.describe "AuthenticationTest", type: :request do
     assert_response :not_found
   end
 
+  it "development login is available when google auth is configured" do
+    original_google_auth_configured = Rails.configuration.x.google_auth_configured
+    original_google_auth_mock_enabled = Rails.configuration.x.google_auth_mock_enabled
+    allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new("development"))
+    Rails.configuration.x.google_auth_configured = true
+    Rails.configuration.x.google_auth_mock_enabled = true
+    user = User.create!(name: "開発ユーザー", email: "dev@example.com")
+
+    with_dev_login_email("dev@example.com") do
+      get login_path
+
+      assert_response :success
+      assert_select "form[action='#{development_login_path}'][method='post']" do
+        assert_select "button", text: "開発用ログイン"
+      end
+
+      post development_login_path
+    end
+
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select ".flash.notice", text: "開発用ログインしました"
+    assert_select ".home-copy-line", text: "#{user.name}さん"
+  ensure
+    Rails.configuration.x.google_auth_configured = original_google_auth_configured
+    Rails.configuration.x.google_auth_mock_enabled = original_google_auth_mock_enabled
+  end
+
   it "logout redirects to login screen" do
     user = User.create!(name: "登録済み", email: "logout@example.com")
 
@@ -147,6 +175,14 @@ RSpec.describe "AuthenticationTest", type: :request do
   ensure
     ENV["SEED_ADMIN_EMAIL"] = previous_email
     ENV["SEED_ADMIN_NAME"] = previous_name
+  end
+
+  def with_dev_login_email(email)
+    previous_email = ENV["DEV_LOGIN_EMAIL"]
+    ENV["DEV_LOGIN_EMAIL"] = email
+    yield
+  ensure
+    ENV["DEV_LOGIN_EMAIL"] = previous_email
   end
 
   def follow_all_redirects

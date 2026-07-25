@@ -114,7 +114,7 @@
             <% unless Rails.configuration.x.google_auth_configured || Rails.configuration.x.google_auth_mock_enabled || Rails.env.test? %>
               <p class="home-login-help">Google認証の設定が未完了です。`GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` を設定してください。</p>
             <% end %>
-            <% if Rails.env.development? && !Rails.configuration.x.google_auth_configured && !Rails.configuration.x.google_auth_mock_enabled %>
+            <% if Rails.env.development? %>
               <%= button_to "開発用ログイン", development_login_path, method: :post, class: "home-nav-btn home-dev-login-btn" %>
             <% end %>
           </div>
