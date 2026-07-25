@@ -4,6 +4,7 @@ class Survey < ApplicationRecord
   has_many :survey_questions, -> { order(:order_index) }, dependent: :destroy
   has_many :survey_assignments, dependent: :destroy
   has_many :score_answers, through: :survey_questions
+  has_many :free_text_answers, dependent: :restrict_with_error
 
   validates :title, :start_at, :end_at, presence: true
   validate :end_at_after_start_at

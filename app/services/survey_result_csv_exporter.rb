@@ -18,7 +18,8 @@ class SurveyResultCsvExporter
           survey.id,
           survey.title,
           snapshots_by_token[submit_token]&.group_name,
-          *questions.map { |question| answer_by_question_id[question.id]&.score }
+          *questions.map { |question| answer_by_question_id[question.id]&.score },
+          csv_safe_value(free_text_answers_by_token[submit_token]&.body)
         ]
       end
     end
@@ -35,7 +36,8 @@ class SurveyResultCsvExporter
       "サーベイID",
       "サーベイ名",
       "グループ",
-      *questions.map { |question| "Q#{question.order_index}" }
+      *questions.map { |question| "Q#{question.order_index}" },
+      "自由記述"
     ]
   end
 
@@ -55,5 +57,15 @@ class SurveyResultCsvExporter
     @snapshots_by_token ||= AnswerGroupSnapshot
       .where(submit_token: anonymous_responses.map(&:first))
       .index_by(&:submit_token)
+  end
+
+  def free_text_answers_by_token
+    @free_text_answers_by_token ||= survey.free_text_answers.index_by(&:submit_token)
+  end
+
+  def csv_safe_value(value)
+    return if value.nil?
+
+    value.match?(/\A[=+\-@\t\r]/) ? "'#{value}" : value
   end
 end

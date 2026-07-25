@@ -22,7 +22,8 @@ RailsAdmin.config do |config|
     "Survey",
     "SurveyQuestion",
     "SurveyAssignment",
-    "ScoreAnswer"
+    "ScoreAnswer",
+    "FreeTextAnswer"
   ]
 
   config.actions do
@@ -32,11 +33,11 @@ RailsAdmin.config do |config|
     download_survey_results
 
     new do
-      except %w[Role SurveyQuestion SurveyAssignment ScoreAnswer]
+      except %w[Role SurveyQuestion SurveyAssignment ScoreAnswer FreeTextAnswer]
     end
 
     edit do
-      except %w[Role SurveyQuestion SurveyAssignment ScoreAnswer]
+      except %w[Role SurveyQuestion SurveyAssignment ScoreAnswer FreeTextAnswer]
     end
 
     delete do
@@ -106,7 +107,30 @@ RailsAdmin.config do |config|
     end
   end
 
-  %w[Role SurveyQuestion SurveyAssignment ScoreAnswer].each do |model_name|
+  config.model "FreeTextAnswer" do
+    label "自由記述回答"
+    label_plural "自由記述回答"
+
+    list do
+      field :survey do
+        label "サーベイ"
+      end
+      field :body do
+        label "回答"
+      end
+    end
+
+    show do
+      field :survey do
+        label "サーベイ"
+      end
+      field :body do
+        label "回答"
+      end
+    end
+  end
+
+  %w[Role SurveyQuestion SurveyAssignment ScoreAnswer FreeTextAnswer].each do |model_name|
     config.model model_name do
       visible false if model_name == "Role"
     end

@@ -71,6 +71,22 @@
       </fieldset>
     <% end %>
 
+    <section class="free-text-question" aria-labelledby="free-text-question-label">
+      <label id="free-text-question-label" for="free_text_answer">
+        今週、よかったことや気になったことを教えてください。（任意）
+      </label>
+      <p id="free-text-answer-help" class="free-text-answer-help">
+        回答は氏名やメールアドレスとは紐づけずに保存されます。個人を特定できる情報は入力しないでください。
+      </p>
+      <%= text_area_tag :free_text_answer,
+                        @free_text_answer,
+                        id: "free_text_answer",
+                        class: "free-text-answer-input",
+                        rows: 6,
+                        maxlength: FreeTextAnswer::MAX_LENGTH,
+                        aria: { describedby: "free-text-answer-help" } %>
+    </section>
+
     <div class="form-actions">
       <%= submit_tag "送信する", class: "button button-primary button-submit" %>
     </div>

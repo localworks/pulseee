@@ -20,11 +20,13 @@ class SurveyAssignment < ApplicationRecord
     pending? && user.survey_subject? && survey.currently_active? && survey.survey_questions.exists?
   end
 
-  def submit_scores!(score_params)
+  def submit_scores!(score_params, free_text: nil)
     errors.clear
 
     questions = survey.survey_questions.ordered.to_a
     scores = scores_for(questions, score_params)
+    submit_token = SecureRandom.uuid
+    free_text_answer = build_free_text_answer(free_text, submit_token)
     return false if errors.any?
 
     with_lock do
@@ -34,7 +36,6 @@ class SurveyAssignment < ApplicationRecord
         return false
       end
 
-      submit_token = SecureRandom.uuid
       questions.each do |question|
         ScoreAnswer.create!(
           submit_token: submit_token,
@@ -46,6 +47,7 @@ class SurveyAssignment < ApplicationRecord
         submit_token: submit_token,
         group_name: user.group&.name
       )
+      free_text_answer&.save!
       update!(state: :submitted, submitted_at: Time.current)
     end
 
@@ -56,6 +58,17 @@ class SurveyAssignment < ApplicationRecord
   end
 
   private
+
+  def build_free_text_answer(free_text, submit_token)
+    body = free_text.to_s.strip.presence
+    return if body.blank?
+
+    FreeTextAnswer.new(survey: survey, submit_token: submit_token, body: body).tap do |answer|
+      next if answer.valid?
+
+      errors.add(:base, "自由記述は#{FreeTextAnswer::MAX_LENGTH}文字以内で入力してください")
+    end
+  end
 
   def scores_for(questions, score_params)
     if questions.empty?
