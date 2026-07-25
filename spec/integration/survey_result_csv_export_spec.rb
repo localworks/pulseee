@@ -31,7 +31,7 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
     score_rows = csv.map { |row| [ row["Q1"], row["Q2"], row["Q3"], row["Q4"], row["Q5"] ] }.sort
 
     assert_equal 3, csv.size
-    assert_equal [ "サーベイID", "サーベイ名", "グループ", "Q1", "Q2", "Q3", "Q4", "Q5" ], csv.headers
+    assert_equal [ "サーベイID", "サーベイ名", "グループ", "Q1", "Q2", "Q3", "Q4", "Q5", "自由記述" ], csv.headers
     assert_not_includes csv.headers, "submit_token"
     assert_not_includes csv.headers, "ユーザーID"
     assert_not_includes csv.headers, "匿名回答ID"
@@ -45,6 +45,7 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
     ], score_rows
     assert_equal survey.id.to_s, first_row["サーベイID"]
     assert_equal "集計テスト", first_row["サーベイ名"]
+    assert_equal [ nil, "気になったことがあります", "連携がよかったです" ], csv.map { |row| row["自由記述"] }.sort_by(&:to_s)
   end
 
   it "system admin sees csv download action on survey detail" do
@@ -60,6 +61,21 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
     get "/admin/survey/#{survey.id}/download_survey_results"
     assert_response :success
     assert_equal "text/csv", response.media_type
+  end
+
+  it "system admin can view free text answers without anonymous tokens" do
+    survey = create_answered_survey
+    free_text_answer = survey.free_text_answers.first
+
+    login_as(@admin)
+    get "/admin/free_text_answer"
+
+    assert_response :success
+    assert_select "th", text: "サーベイ"
+    assert_select "th", text: "回答"
+    assert_select "td", text: free_text_answer.body
+    assert_not_includes response.body, free_text_answer.submit_token
+    assert_not_includes response.body, "csv-subject-"
   end
 
   it "csv includes group name snapshot at time of submission" do
@@ -113,11 +129,12 @@ RSpec.describe "SurveyResultCsvExportTest", type: :request do
       end_at: 1.hour.from_now
     )
 
-    users.zip([ 1, 3, 5 ]).each do |user, score|
+    free_texts = [ nil, "気になったことがあります", "連携がよかったです" ]
+    users.zip([ 1, 3, 5 ], free_texts).each do |user, score, free_text|
       assignment = survey.survey_assignments.find_by!(user: user)
       answers = survey.survey_questions.index_with { score }.transform_keys(&:id)
 
-      assert assignment.submit_scores!(answers)
+      assert assignment.submit_scores!(answers, free_text: free_text)
     end
 
     survey
