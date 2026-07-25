@@ -43,13 +43,17 @@ class Survey < ApplicationRecord
   end
 
   def copy_standard_questions
-    Question.standard_ordered.each.with_index(1) do |question, index|
+    randomized_standard_questions.each.with_index(1) do |question, index|
       survey_questions.create!(
         question: question,
         body: question.body,
         order_index: index
       )
     end
+  end
+
+  def randomized_standard_questions
+    Question.standard_ordered.to_a.shuffle
   end
 
   def create_assignments_when_first_active
