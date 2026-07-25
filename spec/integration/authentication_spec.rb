@@ -116,6 +116,19 @@ RSpec.describe "AuthenticationTest", type: :request do
     Rails.configuration.x.google_auth_mock_enabled = original_google_auth_mock_enabled
   end
 
+  it "development login normalizes the configured email" do
+    allow(Rails).to receive(:env).and_return(ActiveSupport::EnvironmentInquirer.new("development"))
+    user = User.create!(name: "開発ユーザー", email: "dev@example.com")
+
+    with_dev_login_email(" DEV@example.com ") do
+      post development_login_path
+    end
+
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select ".home-copy-line", text: "#{user.name}さん"
+  end
+
   it "logout redirects to login screen" do
     user = User.create!(name: "登録済み", email: "logout@example.com")
 
