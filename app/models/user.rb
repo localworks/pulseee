@@ -3,6 +3,7 @@ class User < ApplicationRecord
   has_many :user_roles, dependent: :destroy
   has_many :roles, through: :user_roles
   has_many :survey_assignments, dependent: :restrict_with_error
+  has_many :weekly_score_notes, foreign_key: :author_id, inverse_of: :author, dependent: :restrict_with_error
 
   before_validation :normalize_email
   before_validation :normalize_slack_user_id

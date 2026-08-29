@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_25_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -193,7 +193,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_000001) do
     t.index ["survey_id", "user_id"], name: "index_survey_assignments_on_survey_id_and_user_id", unique: true
     t.index ["survey_id"], name: "index_survey_assignments_on_survey_id"
     t.index ["user_id"], name: "index_survey_assignments_on_user_id"
-    t.check_constraint "state::text = ANY (ARRAY['pending'::character varying, 'submitted'::character varying]::text[])", name: "chk_survey_assignments_state"
+    t.check_constraint "state::text = ANY (ARRAY['pending'::character varying::text, 'submitted'::character varying::text])", name: "chk_survey_assignments_state"
   end
 
   create_table "survey_questions", force: :cascade do |t|
@@ -218,7 +218,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_000001) do
     t.datetime "updated_at", null: false
     t.index ["status"], name: "index_surveys_on_status"
     t.check_constraint "end_at > start_at", name: "chk_surveys_period"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'active'::character varying]::text[])", name: "chk_surveys_status"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'active'::character varying::text])", name: "chk_surveys_status"
   end
 
   create_table "user_roles", force: :cascade do |t|
@@ -244,6 +244,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_000001) do
     t.index ["slack_user_id"], name: "index_users_on_slack_user_id", unique: true, where: "(slack_user_id IS NOT NULL)"
   end
 
+  create_table "weekly_score_notes", force: :cascade do |t|
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.date "week_start_on", null: false
+    t.index ["author_id"], name: "index_weekly_score_notes_on_author_id"
+    t.index ["week_start_on"], name: "index_weekly_score_notes_on_week_start_on", unique: true
+  end
+
   add_foreign_key "free_text_answers", "surveys"
   add_foreign_key "score_answers", "survey_questions"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -259,4 +269,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_25_000001) do
   add_foreign_key "user_roles", "roles"
   add_foreign_key "user_roles", "users"
   add_foreign_key "users", "groups"
+  add_foreign_key "weekly_score_notes", "users", column: "author_id"
 end

@@ -68,6 +68,98 @@ RSpec.describe "TeamWeeklyScoresTest", type: :request do
     assert_match(%r{6/8.*6/1}m, response.body)
   end
 
+  it "weekly score notes are paginated by month" do
+    manager = create_user_with_role("manager")
+    create_survey_with_responses(group_name: "開発", scores: [ 4, 4, 3, 3, 3 ], week_start_on: Date.new(2026, 6, 8))
+    create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: Date.new(2026, 7, 6))
+
+    login_as(manager)
+    travel_to Time.zone.local(2026, 7, 20) do
+      get admin_team_weekly_scores_path(note_month: "2026-06")
+    end
+
+    assert_select "details.weekly-score-notes:not([open])"
+    assert_select ".weekly-score-notes-pagination strong", text: "2026年6月"
+    assert_select ".weekly-score-note", count: 1
+    assert_select ".weekly-score-note time", text: "6/8 週"
+    assert_select "a", text: "次の月 →"
+
+    travel_to Time.zone.local(2026, 7, 20) do
+      get admin_team_weekly_scores_path(note_month: "2026-07")
+    end
+
+    assert_select ".weekly-score-notes-pagination strong", text: "2026年7月"
+    assert_select ".weekly-score-note time", text: "7/6 週"
+    assert_select "a", text: "← 前の月"
+  end
+
+  it "system admin can add, update, and delete a weekly score note" do
+    admin = create_user_with_role("system_admin")
+    week_start_on = Date.new(2026, 6, 8)
+    create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: week_start_on)
+
+    login_as(admin)
+    travel_to Time.zone.local(2026, 6, 20) do
+      post admin_weekly_score_notes_path,
+           params: { weekly_score_note: { week_start_on: week_start_on, body: "組織変更を告知" } }
+    end
+
+    note = WeeklyScoreNote.find_by!(week_start_on: week_start_on)
+    assert_equal admin, note.author
+    assert_equal "組織変更を告知", note.body
+    assert_redirected_to "#{admin_team_weekly_scores_path}?note_week=2026-06-08#weekly-score-note-2026-06-08"
+
+    travel_to Time.zone.local(2026, 6, 20) do
+      get admin_team_weekly_scores_path
+    end
+    assert_select ".team-score-chart-dot.has-note", count: 1
+    assert_select "a[href*='note_week=2026-06-08']"
+    assert_select "[data-controller='chart-note']", count: 1
+    assert_select "a[data-action*='pointerenter->chart-note#show']", count: 1
+    assert_select "[data-action*='pointerleave->chart-note#hide']", minimum: 2
+    assert_select "[role='tooltip'][data-chart-note-target='tooltip']", text: /組織変更を告知/
+    assert_select ".team-score-chart-note-score", text: "4.20"
+    assert_select ".team-score-chart-note-delta.is-new", text: "初回"
+    assert_select ".weekly-score-note", text: /組織変更を告知/
+    assert_select ".weekly-score-note", text: /system_adminが/
+
+    patch admin_weekly_score_note_path(note), params: { weekly_score_note: { body: "組織変更を実施" } }
+    assert_equal "組織変更を実施", note.reload.body
+
+    assert_difference -> { WeeklyScoreNote.count }, -1 do
+      delete admin_weekly_score_note_path(note)
+    end
+    assert_redirected_to "#{admin_team_weekly_scores_path}?note_week=2026-06-08#weekly-score-note-2026-06-08"
+  end
+
+  it "manager can view but cannot edit weekly score notes" do
+    manager = create_user_with_role("manager")
+    author = create_user_with_role("system_admin")
+    week_start_on = Date.new(2026, 6, 8)
+    create_survey_with_responses(group_name: "開発", scores: [ 5, 4, 4, 4, 4 ], week_start_on: week_start_on)
+    WeeklyScoreNote.create!(author: author, week_start_on: week_start_on, body: "施策を開始")
+
+    login_as(manager)
+    travel_to Time.zone.local(2026, 6, 20) do
+      get admin_team_weekly_scores_path
+    end
+    assert_select ".weekly-score-note", text: /施策を開始/
+    assert_select ".weekly-score-note-editor", count: 0
+    assert_select "details.weekly-score-notes:not([open])", count: 1
+
+    travel_to Time.zone.local(2026, 6, 20) do
+      get admin_team_weekly_scores_path(note_week: week_start_on)
+    end
+    assert_select "details.weekly-score-notes[open]", count: 1
+
+    assert_no_difference -> { WeeklyScoreNote.count } do
+      post admin_weekly_score_notes_path,
+           params: { weekly_score_note: { week_start_on: week_start_on, body: "書き換え" } }
+    end
+    follow_redirect!
+    assert_select ".flash.alert", text: "週次メモの編集権限が必要です"
+  end
+
   it "system admin can navigate from home" do
     admin = create_user_with_role("system_admin")
     login_as(admin)

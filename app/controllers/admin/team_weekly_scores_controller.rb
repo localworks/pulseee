@@ -26,6 +26,9 @@ module Admin
       @overall_delta = delta(@overall_latest_average, @overall_previous_average)
       @latest_response_count = @latest_scores.sum(&:response_count)
       @team_cards = team_cards
+      @weekly_score_notes_by_week = WeeklyScoreNote.where(week_start_on: @weeks).includes(:author).index_by(&:week_start_on)
+      @expanded_note_week = requested_note_week
+      set_note_pagination
       @weekly_response_rates = current_user.system_admin? ? Surveys::WeeklyResponseRatesQuery.call : []
     end
 
@@ -114,13 +117,19 @@ module Admin
     end
 
     def overall_points(scores)
-      @weeks.map do |week_start_on|
+      points = @weeks.map do |week_start_on|
         week_scores = scores_for_week(scores, week_start_on)
         {
+          week_start_on: week_start_on,
           label: score_date_label(week_start_on),
           value: average(week_scores.map(&:overall_average))
         }
       end
+
+      points.each_cons(2) do |previous, current|
+        current[:delta] = (current.fetch(:value) - previous.fetch(:value)).round(2)
+      end
+      points
     end
 
     def team_cards
@@ -153,6 +162,34 @@ module Admin
 
     def score_date_label(date)
       "#{date.month}/#{date.day}"
+    end
+
+    def requested_note_week
+      return if params[:note_week].blank?
+
+      Date.iso8601(params[:note_week])
+    rescue ArgumentError
+      nil
+    end
+
+    def set_note_pagination
+      @note_months = @overall_points.map { |point| point.fetch(:week_start_on).beginning_of_month }.uniq.sort
+      requested_month = requested_note_week&.beginning_of_month || requested_note_month
+      @note_month = requested_month if @note_months.include?(requested_month)
+      @note_month ||= @note_months.last
+      @note_points = @overall_points.select { |point| point.fetch(:week_start_on).beginning_of_month == @note_month }
+      current_index = @note_months.index(@note_month)
+      @previous_note_month = @note_months[current_index - 1] if current_index&.positive?
+      @next_note_month = @note_months[current_index + 1] if current_index && current_index < @note_months.size - 1
+      @notes_expanded = @expanded_note_week.present?
+    end
+
+    def requested_note_month
+      return if params[:note_month].blank?
+
+      Date.strptime(params[:note_month], "%Y-%m").beginning_of_month
+    rescue ArgumentError
+      nil
     end
 
     def average(values)
