@@ -87,8 +87,8 @@
           <h2 id="team-score-overall-chart-heading">全チーム平均の推移</h2>
           <p>スコア1〜5の縦軸で、週ごとの全体傾向を表示しています。</p>
         </div>
-        <div class="team-score-line-chart" role="img" aria-label="全チーム平均の折れ線グラフ">
-          <svg viewBox="0 0 800 300" aria-hidden="true">
+        <div class="team-score-line-chart" data-controller="chart-note" data-action="pointerleave->chart-note#hide">
+          <svg viewBox="0 0 800 300" role="img" aria-label="全チーム平均の折れ線グラフ。メモがある週は強調表示されています。">
             <%# Y軸グリッド・ラベル（1〜5） %>
             <% overall_chart_y_axis.each do |item| %>
               <line x1="52" y1="<%= item[:y] %>" x2="784" y2="<%= item[:y] %>"
@@ -101,14 +101,125 @@
             <% overall_pts = overall_chart_points(@overall_points) %>
             <polyline points="<%= overall_pts.map { |p| "#{p[:x]},#{p[:y]}" }.join(' ') %>" class="team-score-chart-line" />
             <% overall_pts.each do |point| %>
-              <circle cx="<%= point[:x] %>" cy="<%= point[:y] %>" r="5" class="team-score-chart-dot" />
+              <% note = @weekly_score_notes_by_week[point.fetch(:week_start_on)] %>
+              <a href="<%= admin_team_weekly_scores_path(note_week: point.fetch(:week_start_on), anchor: "weekly-score-note-#{point.fetch(:week_start_on)}") %>"
+                 aria-label="<%= score_date_label(point.fetch(:week_start_on)) %>の週次メモ<%= 'あり' if note %>"
+                 <% if note %>
+                   aria-describedby="weekly-score-note-tooltip-<%= point.fetch(:week_start_on) %>"
+                   data-week="<%= point.fetch(:week_start_on) %>"
+                   data-action="pointerenter->chart-note#show pointerleave->chart-note#hide focus->chart-note#show blur->chart-note#hide"
+                 <% end %>>
+                <circle cx="<%= point[:x] %>" cy="<%= point[:y] %>" r="<%= note ? 7 : 5 %>" class="team-score-chart-dot <%= 'has-note' if note %>" />
+              </a>
             <% end %>
             <%# X軸ラベル（多い場合は自動間引き） %>
             <% overall_chart_x_labels(@overall_points).each do |item| %>
               <text x="<%= item[:x] %>" y="278" class="team-score-chart-label-x"><%= item[:label] %></text>
             <% end %>
           </svg>
+          <div class="team-score-chart-annotations" aria-label="グラフ上の週次メモ">
+            <% overall_pts.each do |point| %>
+              <% note = @weekly_score_notes_by_week[point.fetch(:week_start_on)] %>
+              <% next unless note %>
+              <% tooltip_alignment = "is-right-aligned" if point.fetch(:x) > TeamWeeklyScoresHelper::OVERALL_W * 0.75 %>
+              <% delta = point[:delta] %>
+              <div id="weekly-score-note-tooltip-<%= point.fetch(:week_start_on) %>"
+                 class="team-score-chart-note <%= tooltip_alignment %>"
+                 role="tooltip"
+                 data-chart-note-target="tooltip"
+                 data-week="<%= point.fetch(:week_start_on) %>"
+                 hidden
+                 style="--point-x: <%= (point.fetch(:x) * 100 / TeamWeeklyScoresHelper::OVERALL_W).round(2) %>%; --point-y: <%= (point.fetch(:y) * 100 / TeamWeeklyScoresHelper::OVERALL_H).round(2) %>%;">
+                <div class="team-score-chart-note-meta">
+                  <span><%= score_date_label(point.fetch(:week_start_on)) %></span>
+                  <strong class="team-score-chart-note-score"><%= number_with_precision(point.fetch(:value), precision: 2) %></strong>
+                  <em class="team-score-chart-note-delta <%= delta ? score_delta_class(delta) : "is-new" %>">
+                    <%= delta ? score_delta_text(delta) : "初回" %>
+                  </em>
+                </div>
+                <strong><%= note.body.truncate(48) %></strong>
+              </div>
+            <% end %>
+          </div>
         </div>
+
+      <details class="weekly-score-notes" <%= 'open' if @notes_expanded %>>
+        <summary class="weekly-score-notes-heading">
+          <div>
+            <p class="team-score-kicker">Weekly Notes</p>
+            <h2 id="weekly-score-notes-heading">スコア変化のメモ</h2>
+            <p>月ごとに、グラフ上で強調表示された点のメモを確認できます。</p>
+          </div>
+          <span class="weekly-score-notes-toggle" aria-hidden="true">
+            <span class="weekly-score-notes-toggle-closed">メモを表示</span>
+            <span class="weekly-score-notes-toggle-open">閉じる</span>
+            <i></i>
+          </span>
+        </summary>
+
+        <div class="weekly-score-notes-content">
+          <nav class="weekly-score-notes-pagination" aria-label="メモの月切り替え">
+            <% if @previous_note_month %>
+              <%= link_to "← 前の月", admin_team_weekly_scores_path(note_month: @previous_note_month.strftime("%Y-%m"), anchor: "weekly-score-notes-heading"), class: "button button-secondary" %>
+            <% else %>
+              <span></span>
+            <% end %>
+            <strong><%= @note_month.strftime("%Y年%-m月") %></strong>
+            <% if @next_note_month %>
+              <%= link_to "次の月 →", admin_team_weekly_scores_path(note_month: @next_note_month.strftime("%Y-%m"), anchor: "weekly-score-notes-heading"), class: "button button-secondary" %>
+            <% else %>
+              <span></span>
+            <% end %>
+          </nav>
+
+          <div class="weekly-score-note-list">
+          <% @note_points.reverse_each do |point| %>
+            <% week_start_on = point.fetch(:week_start_on) %>
+            <% note = @weekly_score_notes_by_week[week_start_on] %>
+            <article id="weekly-score-note-<%= week_start_on %>" class="weekly-score-note <%= 'has-note' if note %>">
+              <div class="weekly-score-note-summary">
+                <div>
+                  <time datetime="<%= week_start_on %>"><%= score_date_label(week_start_on) %> 週</time>
+                  <span>全体平均 <strong><%= number_with_precision(point.fetch(:value), precision: 2) %></strong></span>
+                </div>
+                <% if note %>
+                  <div class="weekly-score-note-body"><%= simple_format(note.body) %></div>
+                  <small><%= note.author.name %>が<%= l(note.created_at, format: :short) %>に記録</small>
+                <% else %>
+                  <p class="weekly-score-note-empty">メモはありません</p>
+                <% end %>
+              </div>
+
+              <% if current_user.system_admin? %>
+                <details class="weekly-score-note-editor" <%= 'open' unless note %>>
+                  <summary><%= note ? 'メモを編集' : 'この週にメモを追加' %></summary>
+                  <%= form_with model: (note || WeeklyScoreNote.new),
+                                url: note ? admin_weekly_score_note_path(note) : admin_weekly_score_notes_path,
+                                method: note ? :patch : :post do |form| %>
+                    <%= form.hidden_field :week_start_on, value: week_start_on %>
+                    <%= form.text_area :body,
+                                       value: note&.body,
+                                       rows: 4,
+                                       maxlength: WeeklyScoreNote::MAX_LENGTH,
+                                       placeholder: "例：組織変更の告知を実施。翌週以降の推移を確認する。",
+                                       aria: { label: "#{score_date_label(week_start_on)}週のメモ" } %>
+                    <div class="weekly-score-note-actions">
+                      <%= form.submit(note ? "更新する" : "保存する", class: "button button-primary") %>
+                    </div>
+                  <% end %>
+                  <% if note %>
+                    <div class="weekly-score-note-actions">
+                      <%= button_to "削除する", admin_weekly_score_note_path(note), method: :delete,
+                                    class: "button button-secondary", form: { data: { turbo_confirm: "この週次メモを削除しますか？" } } %>
+                    </div>
+                  <% end %>
+                </details>
+              <% end %>
+            </article>
+          <% end %>
+          </div>
+        </div>
+      </details>
       </section>
 
       <div class="team-score-card-grid">

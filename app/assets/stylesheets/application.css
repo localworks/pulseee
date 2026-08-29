@@ -12,12 +12,18 @@
 :root {
   --primary: #5645d4;
   --primary-pressed: #4534b3;
+  --brand-purple-300: #d6b6f6;
+  --brand-purple-800: #391c57;
+  --link-blue: #0075de;
+  --card-tint-yellow: #fef7d6;
+  --card-tint-yellow-bold: #f9e79f;
   --canvas: #ffffff;
   --surface: #f6f5f4;
   --hairline: #e5e3df;
   --hairline-strong: #c8c4be;
   --ink: #1a1a1a;
   --charcoal: #37352f;
+  --slate: #5d5b54;
   --steel: #787671;
   --success: #1aae39;
   --error: #e03131;
@@ -1562,13 +1568,117 @@ h3 {
 }
 
 .team-score-line-chart {
-  display: grid;
-  gap: 8px;
+  position: relative;
+  aspect-ratio: 800 / 300;
 }
 
 .team-score-line-chart svg {
   width: 100%;
+  height: 100%;
   overflow: visible;
+}
+
+.team-score-chart-annotations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.team-score-chart-note[hidden] {
+  display: none;
+}
+
+.team-score-chart-note {
+  position: absolute;
+  top: calc(var(--point-y) - 8px);
+  left: clamp(88px, var(--point-x), calc(100% - 88px));
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  width: min(204px, 28%);
+  padding: 12px 14px;
+  color: var(--charcoal);
+  background: linear-gradient(145deg, #ffffff 0%, #f5f1ff 100%);
+  border: 1px solid var(--brand-purple-300);
+  border-left: 3px solid var(--primary);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgb(57 28 87 / 18%);
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% + 8px)) scale(0.96);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.team-score-chart-note.is-right-aligned {
+  left: var(--point-x);
+  transform: translate(-100%, calc(-100% + 8px)) scale(0.96);
+}
+
+.team-score-chart-note.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -100%) scale(1);
+}
+
+.team-score-chart-note.is-right-aligned.is-visible {
+  transform: translate(-100%, -100%) scale(1);
+}
+
+.team-score-chart-note::after {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  width: 1px;
+  height: 20px;
+  background: linear-gradient(var(--primary), transparent);
+  content: "";
+}
+
+.team-score-chart-note.is-right-aligned::after {
+  right: 0;
+  left: auto;
+}
+
+.team-score-chart-note-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-score-chart-note-meta span {
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.team-score-chart-note-score {
+  padding: 2px 6px;
+  color: var(--brand-purple-800);
+  background: var(--canvas);
+  border: 1px solid var(--brand-purple-300);
+  border-radius: 9999px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.team-score-chart-note-delta {
+  margin-left: auto;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.team-score-chart-note-delta.is-up { color: var(--success); }
+.team-score-chart-note-delta.is-down { color: var(--error); }
+.team-score-chart-note-delta.is-flat,
+.team-score-chart-note-delta.is-new { color: var(--steel); }
+
+.team-score-chart-note strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-weight: 600;
 }
 
 .team-score-chart-label-x {
@@ -1614,12 +1724,239 @@ h3 {
   stroke-width: 2;
 }
 
+.team-score-chart-dot.has-note {
+  fill: var(--primary);
+  stroke: var(--card-tint-yellow-bold);
+  stroke-width: 3;
+}
+
+.team-score-line-chart a:focus .team-score-chart-dot {
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
 .team-score-chart-labels {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
   color: var(--steel);
   padding: 0 28px;
+}
+
+/* 週次メモ */
+
+.weekly-score-notes {
+  grid-column: 1 / -1;
+  padding: 28px;
+  background: var(--card-tint-yellow);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+}
+
+.weekly-score-notes-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.weekly-score-notes-heading::-webkit-details-marker {
+  display: none;
+}
+
+.weekly-score-notes-heading h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.weekly-score-notes-heading p:not(.team-score-kicker) {
+  margin: 6px 0 0;
+  color: var(--slate);
+  font-size: 14px;
+}
+
+.weekly-score-notes-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 10px;
+  color: var(--brand-purple-800);
+  background: var(--canvas);
+  border: 1px solid var(--brand-purple-300);
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.weekly-score-notes-toggle-open {
+  display: none;
+}
+
+.weekly-score-notes-toggle i {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+.weekly-score-notes[open] .weekly-score-notes-toggle-closed {
+  display: none;
+}
+
+.weekly-score-notes[open] .weekly-score-notes-toggle-open {
+  display: inline;
+}
+
+.weekly-score-notes[open] .weekly-score-notes-toggle i {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.weekly-score-notes-heading:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.weekly-score-note-list {
+  display: grid;
+  gap: 12px;
+}
+
+.weekly-score-notes-content {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.weekly-score-notes-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weekly-score-notes-pagination strong {
+  flex: 1;
+  color: var(--brand-purple-800);
+  font-size: 16px;
+  text-align: center;
+}
+
+.weekly-score-notes-pagination > :first-child,
+.weekly-score-notes-pagination > :last-child {
+  flex: 0 0 88px;
+}
+
+.weekly-score-notes-pagination > :last-child:not(.button) {
+  min-height: 36px;
+}
+
+.weekly-score-notes-pagination .button {
+  min-height: 30px;
+  padding: 5px 8px;
+  justify-content: center;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.weekly-score-note {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  scroll-margin-top: 24px;
+}
+
+.weekly-score-note.has-note {
+  border-color: var(--brand-purple-300);
+}
+
+.weekly-score-note-summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.weekly-score-note time {
+  color: var(--brand-purple-800);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.weekly-score-note-summary span,
+.weekly-score-note-summary small {
+  color: var(--steel);
+  font-size: 13px;
+}
+
+.weekly-score-note-summary span strong {
+  color: var(--charcoal);
+}
+
+.weekly-score-note-body {
+  margin: 10px 0 6px;
+  color: var(--charcoal);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.weekly-score-note-body p {
+  margin: 0;
+}
+
+.weekly-score-note-empty {
+  color: var(--steel) !important;
+}
+
+.weekly-score-note-editor {
+  border-top: 1px solid var(--hairline);
+  padding-top: 12px;
+}
+
+.weekly-score-note-editor summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--link-blue);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.weekly-score-note-editor form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.weekly-score-note-editor textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 8px;
+  color: var(--charcoal);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.weekly-score-note-editor textarea:focus {
+  outline: 2px solid var(--brand-purple-300);
+  outline-offset: 1px;
+  border-color: var(--primary);
+}
+
+.weekly-score-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* チーム別カード */
@@ -1839,5 +2176,19 @@ h3 {
 
   .team-score-chart-panel {
     grid-template-columns: 1fr;
+  }
+
+  .weekly-score-notes-pagination {
+    flex-wrap: wrap;
+  }
+
+  .weekly-score-notes-pagination strong {
+    order: -1;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
+  .weekly-score-notes-pagination .button {
+    justify-content: center;
   }
 }
