@@ -78,7 +78,7 @@ RSpec.describe "TeamWeeklyScoresTest", type: :request do
       get admin_team_weekly_scores_path(note_month: "2026-06")
     end
 
-    assert_select "details.weekly-score-notes[open]"
+    assert_select "details.weekly-score-notes:not([open])"
     assert_select ".weekly-score-notes-pagination strong", text: "2026年6月"
     assert_select ".weekly-score-note", count: 1
     assert_select ".weekly-score-note time", text: "6/8 週"

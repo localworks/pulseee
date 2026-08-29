@@ -181,7 +181,7 @@ module Admin
       current_index = @note_months.index(@note_month)
       @previous_note_month = @note_months[current_index - 1] if current_index&.positive?
       @next_note_month = @note_months[current_index + 1] if current_index && current_index < @note_months.size - 1
-      @notes_expanded = @expanded_note_week.present? || params[:note_month].present?
+      @notes_expanded = @expanded_note_week.present?
     end
 
     def requested_note_month
